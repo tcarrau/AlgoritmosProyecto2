@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.001" tests="10" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0" tests="10" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -12,7 +12,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="ES"/>
     <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/surefire/surefirebooter-20261014104230097_3.jar /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/surefire 2026-10-14T10-42-29_993-jvmRun1 surefire-20261014104230097_1tmp surefire_0-20261014104230097_2tmp"/>
+    <property name="sun.java.command" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/surefire/surefirebooter-20261014105000376_3.jar /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/surefire 2026-10-14T10-50-00_263-jvmRun1 surefire-20261014105000376_1tmp surefire_0-20261014105000376_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/test-classes:/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/classes:/Users/tomascarrau/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -27,7 +27,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
-    <property name="surefire.real.class.path" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/surefire/surefirebooter-20261014104230097_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/surefire/surefirebooter-20261014105000376_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.20+8"/>
     <property name="user.name" value="tomascarrau"/>
