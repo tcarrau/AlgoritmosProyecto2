@@ -4,6 +4,7 @@
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/IUndirectedGraph.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/IUndirectedGraphAlgorithm.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/UndirectedGraph.java
+/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/UndirectedGraphAlgorithm.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/IGraph.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/edge/DirectedEdge.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/edge/Edge.java
