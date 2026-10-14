@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import ucu.edu.aed.tda.grafo.model.edge.DirectedEdge;
 import ucu.edu.aed.tda.grafo.model.edge.Edge;
 import ucu.edu.aed.tda.grafo.model.edge.UndirectedEdge;
 
@@ -32,9 +31,7 @@ public class UndirectedGraph<V, D> implements IUndirectedGraph<V, D> {
         Objects.requireNonNull(vertex);
         if (listaAdyacencia.containsKey(vertex))
             return false;
-        listaAdyacencia.put(vertex, new ArrayList<>() {
-
-        });
+        listaAdyacencia.put(vertex, new ArrayList<>());
         return true;
     }
 
@@ -116,17 +113,7 @@ public class UndirectedGraph<V, D> implements IUndirectedGraph<V, D> {
     @Override
     public Set<Edge<V, D>> aristas() {
         Set<Edge<V, D>> resultado = new LinkedHashSet<>();
-        List<V> vertices = new ArrayList<>(listaAdyacencia.keySet());
-
-        for (int i = 0; i < vertices.size(); i++) {
-            V origen = vertices.get(i);
-
-            for (Edge<V, D> destino : listaAdyacencia.get(origen)) {
-                if (i < vertices.indexOf(destino)) {
-                    resultado.add(destino);
-                }
-            }
-        }
+        listaAdyacencia.values().forEach(resultado::addAll);
 
         return Collections.unmodifiableSet(resultado);
     }
