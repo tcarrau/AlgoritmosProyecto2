@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: ucu.edu.aed.tda.grafo.UndirectedGraphAlgorithmTest
+-------------------------------------------------------------------------------
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in ucu.edu.aed.tda.grafo.UndirectedGraphAlgorithmTest
