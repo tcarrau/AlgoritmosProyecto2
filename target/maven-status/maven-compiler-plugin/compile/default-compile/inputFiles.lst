@@ -1,8 +1,10 @@
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/DirectedGraph.java
+/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/DirectedGraphAlgorithms.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/IDirectedGraphAlgorithms.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/IDirectedIGraph.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/IUndirectedGraph.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/IUndirectedGraphAlgorithm.java
+/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/ShortestPathAlgorithms.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/UndirectedGraph.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/UndirectedGraphAlgorithm.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/IGraph.java
@@ -10,6 +12,8 @@
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/edge/Edge.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/edge/UndirectedEdge.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/edge/WeightedEdge.java
+/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/result/DijkstraResult.java
+/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/result/FloydWarshallResult.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/result/IDijkstraResult.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/result/IFloydWarshallResult.java
 /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/src/main/java/ucu/edu/aed/tda/grafo/model/result/Path.java

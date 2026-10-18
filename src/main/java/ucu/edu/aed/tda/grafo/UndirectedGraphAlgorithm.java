@@ -6,10 +6,13 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Collections;
 import java.util.function.Consumer;
 
 import ucu.edu.aed.tda.grafo.model.edge.Edge;
@@ -173,6 +176,69 @@ public class UndirectedGraphAlgorithm implements IUndirectedGraphAlgorithm {
                     }
                 }
             }
+        }
+    }
+
+
+    @Override
+    public <V, D> Set<V> puntosDeArticulacion(IUndirectedGraph<V, D> graph) {
+        Objects.requireNonNull(graph, "graph");
+
+        Map<V, Integer> descubrimiento = new HashMap<>();
+        Map<V, Integer> low = new HashMap<>();
+        Set<V> articulaciones = new LinkedHashSet<>();
+        int[] tiempo = {0};
+
+        // Procesar cada componente, incluso si el grafo es desconectado.
+        for (V vertice : graph.vertices()) {
+            if (!descubrimiento.containsKey(vertice)) {
+                dfsArticulaciones(graph, vertice, null, descubrimiento, low,
+                        articulaciones, tiempo);
+            }
+        }
+
+        return Collections.unmodifiableSet(articulaciones);
+    }
+
+    private <V, D> void dfsArticulaciones(
+            IUndirectedGraph<V, D> graph,
+            V actual,
+            V padre,
+            Map<V, Integer> descubrimiento,
+            Map<V, Integer> low,
+            Set<V> articulaciones,
+            int[] tiempo) {
+
+        int tiempoActual = tiempo[0]++;
+        descubrimiento.put(actual, tiempoActual);
+        low.put(actual, tiempoActual);
+        int hijos = 0;
+
+        for (Edge<V, D> arista : graph.adyacencias(graph.construirComparable(actual))) {
+            V vecino = Objects.equals(arista.source(), actual)
+                    ? arista.target()
+                    : arista.source();
+
+            if (Objects.equals(vecino, padre)) continue;
+
+            if (!descubrimiento.containsKey(vecino)) {
+                hijos++;
+                dfsArticulaciones(graph, vecino, actual, descubrimiento, low,
+                        articulaciones, tiempo);
+
+                low.put(actual, Math.min(low.get(actual), low.get(vecino)));
+
+                // La raíz se evalúa aparte: debe tener más de un hijo DFS.
+                if (padre != null && low.get(vecino) >= descubrimiento.get(actual)) {
+                    articulaciones.add(actual);
+                }
+            } else {
+                low.put(actual, Math.min(low.get(actual), descubrimiento.get(vecino)));
+            }
+        }
+
+        if (padre == null && hijos > 1) {
+            articulaciones.add(actual);
         }
     }
 }
