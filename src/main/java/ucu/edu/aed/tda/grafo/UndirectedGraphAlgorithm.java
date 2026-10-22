@@ -23,7 +23,8 @@ public class UndirectedGraphAlgorithm implements IUndirectedGraphAlgorithm {
         Set<Edge<V, D>> aristas = new LinkedHashSet<>();
         aristas = graph.aristas();
         List<Edge<V, D>> ordenadas = new ArrayList<>(aristas);
-
+        int cont = 0;
+        int cantidadVertices = graph.cantidadDeVertices() -1;
         ordenadas.sort(
                 Comparator.comparingDouble(e -> e.dato().getWeight()));
 
@@ -35,10 +36,16 @@ public class UndirectedGraphAlgorithm implements IUndirectedGraphAlgorithm {
 
         for (Edge<V, D> arista : ordenadas) {
             grafo.agregarArista(arista.source(), arista.target(), arista.dato());
+            cont++;
             if (grafo.tieneCiclos()) {
                 grafo.eliminarArista(grafo.construirComparable(arista.source()),
                         grafo.construirComparable(arista.target()));
+                        cont--;
             }
+            if(cont == cantidadVertices){
+                break;
+            }
+            
         }
 
         return grafo;
