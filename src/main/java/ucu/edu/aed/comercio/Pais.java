@@ -18,54 +18,124 @@ public class Pais {
     private Set<Pais> destinosEmbargados = new LinkedHashSet<>();
     private Map<Pais, Set<Producto>> productosRestringidos = new LinkedHashMap<>();
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public Set<Producto> getProductosProducidos() { return productosProducidos; }
-    public void setProductosProducidos(Set<Producto> productosProducidos) { this.productosProducidos = productosProducidos; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public Map<Pais, Set<Producto>> getExportaciones() { return exportaciones; }
-    public void setExportaciones(Map<Pais, Set<Producto>> exportaciones) { this.exportaciones = exportaciones; }
+    public Set<Producto> getProductosProducidos() {
+        return productosProducidos;
+    }
 
-    public Map<Pais, String> getTiposAcuerdo() { return tiposAcuerdo; }
-    public void setTiposAcuerdo(Map<Pais, String> tiposAcuerdo) { this.tiposAcuerdo = tiposAcuerdo; }
+    public void setProductosProducidos(Set<Producto> productosProducidos) {
+        this.productosProducidos = productosProducidos;
+    }
 
-    public Map<Pais, BigDecimal> getArancelesGenerales() { return arancelesGenerales; }
-    public void setArancelesGenerales(Map<Pais, BigDecimal> arancelesGenerales) { this.arancelesGenerales = arancelesGenerales; }
+    public Map<Pais, Set<Producto>> getExportaciones() {
+        return exportaciones;
+    }
 
-    public Map<Pais, Map<Producto, BigDecimal>> getArancelesPorProducto() { return arancelesPorProducto; }
-    public void setArancelesPorProducto(Map<Pais, Map<Producto, BigDecimal>> arancelesPorProducto) { this.arancelesPorProducto = arancelesPorProducto; }
+    public void setExportaciones(Map<Pais, Set<Producto>> exportaciones) {
+        this.exportaciones = exportaciones;
+    }
 
-    public Map<Pais, Map<String, BigDecimal>> getArancelesPorCategoria() { return arancelesPorCategoria; }
-    public void setArancelesPorCategoria(Map<Pais, Map<String, BigDecimal>> arancelesPorCategoria) { this.arancelesPorCategoria = arancelesPorCategoria; }
+    public Map<Pais, String> getTiposAcuerdo() {
+        return tiposAcuerdo;
+    }
 
-    public Set<Pais> getDestinosEmbargados() { return destinosEmbargados; }
-    public void setDestinosEmbargados(Set<Pais> destinosEmbargados) { this.destinosEmbargados = destinosEmbargados; }
+    public void setTiposAcuerdo(Map<Pais, String> tiposAcuerdo) {
+        this.tiposAcuerdo = tiposAcuerdo;
+    }
 
-    public Map<Pais, Set<Producto>> getProductosRestringidos() { return productosRestringidos; }
-    public void setProductosRestringidos(Map<Pais, Set<Producto>> productosRestringidos) { this.productosRestringidos = productosRestringidos; }
+    public Map<Pais, BigDecimal> getArancelesGenerales() {
+        return arancelesGenerales;
+    }
+
+    public void setArancelesGenerales(Map<Pais, BigDecimal> arancelesGenerales) {
+        this.arancelesGenerales = arancelesGenerales;
+    }
+
+    public Map<Pais, Map<Producto, BigDecimal>> getArancelesPorProducto() {
+        return arancelesPorProducto;
+    }
+
+    public void setArancelesPorProducto(Map<Pais, Map<Producto, BigDecimal>> arancelesPorProducto) {
+        this.arancelesPorProducto = arancelesPorProducto;
+    }
+
+    public Map<Pais, Map<String, BigDecimal>> getArancelesPorCategoria() {
+        return arancelesPorCategoria;
+    }
+
+    public void setArancelesPorCategoria(Map<Pais, Map<String, BigDecimal>> arancelesPorCategoria) {
+        this.arancelesPorCategoria = arancelesPorCategoria;
+    }
+
+    public Set<Pais> getDestinosEmbargados() {
+        return destinosEmbargados;
+    }
+
+    public void setDestinosEmbargados(Set<Pais> destinosEmbargados) {
+        this.destinosEmbargados = destinosEmbargados;
+    }
+
+    public Map<Pais, Set<Producto>> getProductosRestringidos() {
+        return productosRestringidos;
+    }
+
+    public void setProductosRestringidos(Map<Pais, Set<Producto>> productosRestringidos) {
+        this.productosRestringidos = productosRestringidos;
+    }
 
     public boolean permiteComercioCon(Pais destino, Producto producto) {
-        Set<Pais> paisesEportacionesPosibles = new HashSet<>(exportaciones.keySet());
-
-        for (Pais pais : paisesEportacionesPosibles) {
-            if (pais.equals(destino)) continue;
-            if (pais.productosRestringidos.get(pais).contains(producto)) {
-                return false;
-            }
-            break;
+        if (destino == null || producto == null) {
+            return false;
         }
-        return true;
+    
+        if (destinosEmbargados.contains(destino)) {
+            return false;
+        }
+    
+        Set<Producto> restringidos = productosRestringidos.get(destino);
+    
+        return restringidos == null || !restringidos.contains(producto);
+
+    }
+
+    public boolean permiteComercioCon(Pais destino) {
+        if (destino == null) {
+            return false;
+        }
+    
+        return !destinosEmbargados.contains(destino);
 
     }
 
     public BigDecimal obtenerArancel(Pais destino, Producto producto) {
-        if (destino == null || producto == null) {
-            return new BigDecimal(0);
+        if (destino == null || producto == null)
+        {
+            return new BigDecimal(-1);
         }
 
-        if (permiteComercioCon(destino, producto)) {
-            return arancelesPorProducto.get(destino).get(producto);
+        if (permiteComercioCon(destino, producto)) 
+        {
+            if (arancelesPorProducto.containsKey(destino)) 
+            {
+                if (arancelesPorProducto.get(destino).containsKey(producto))
+                {
+                    return arancelesPorProducto.get(destino).get(producto);
+                }
+            }
+            else 
+            {
+                if (arancelesGenerales.containsKey(destino)) 
+                {
+                    return arancelesGenerales.get(destino);   
+                }
+            }
         }
 
         return new BigDecimal(-1);
@@ -73,12 +143,23 @@ public class Pais {
     }
 
     public BigDecimal obtenerArancel(Pais destino, String categoria) {
-        if (arancelesPorCategoria.containsKey(destino)) {
-            if (arancelesPorCategoria.get(destino).containsKey(categoria)) {
-                return arancelesPorCategoria.get(destino).get(categoria);
-            }
-
+        if (destino == null || categoria == null) {
+            return new BigDecimal(-1);
         }
+
+        if (permiteComercioCon(destino)) {
+            if (arancelesPorCategoria.containsKey(destino)) {
+                if (arancelesPorCategoria.get(destino).containsKey(categoria)){
+                    return arancelesPorCategoria.get(destino).get(categoria);
+                }
+            }
+            else {
+                if (arancelesGenerales.containsKey(destino)) {
+                    return arancelesGenerales.get(destino);   
+                }
+            }
+        }
+
         return new BigDecimal(-1);
     }
 }
