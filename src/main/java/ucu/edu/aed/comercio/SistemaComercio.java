@@ -8,10 +8,22 @@ import java.util.Map;
 import java.util.Set;
 
 public class SistemaComercio {
-    private final Map<String, Pais> paises = new LinkedHashMap<>();
-    private final Map<String, Producto> productos = new LinkedHashMap<>();
-    private final Map<String, NodoLogistico> nodos = new LinkedHashMap<>();
-    private final List<Tramo> tramos = new ArrayList<>();
+    private Map<String, Pais> paises = new LinkedHashMap<>();
+    private Map<String, Producto> productos = new LinkedHashMap<>();
+    private Map<String, NodoLogistico> nodos = new LinkedHashMap<>();
+    private List<Tramo> tramos = new ArrayList<>();
+
+    public Map<String, Pais> getPaises() { return paises; }
+    public void setPaises(Map<String, Pais> paises) { this.paises = paises; }
+
+    public Map<String, Producto> getProductos() { return productos; }
+    public void setProductos(Map<String, Producto> productos) { this.productos = productos; }
+
+    public Map<String, NodoLogistico> getNodos() { return nodos; }
+    public void setNodos(Map<String, NodoLogistico> nodos) { this.nodos = nodos; }
+
+    public List<Tramo> getTramos() { return tramos; }
+    public void setTramos(List<Tramo> tramos) { this.tramos = tramos; }
 
     public void registrarPais(Pais pais) {
         throw new UnsupportedOperationException("Pendiente de implementar");
