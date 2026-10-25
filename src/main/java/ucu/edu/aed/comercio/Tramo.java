@@ -2,6 +2,7 @@ package ucu.edu.aed.comercio;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Tramo {
@@ -34,11 +35,23 @@ public class Tramo {
     public Boolean getActivo() { return activo; }
     public void setActivo(Boolean activo) { this.activo = activo; }
 
-    public boolean esUtilizable(Producto producto) {
-        throw new UnsupportedOperationException("Pendiente de implementar");
+    private boolean cruzaFrontera() {
+        return !Objects.equals(origen.getPais(), destino.getPais());
     }
 
+    public boolean esUtilizable(Producto producto) {
+        if (!Boolean.TRUE.equals(activo) || !tiposCargaAdmitidos.contains(producto.getTipoCarga())) {
+            return false;
+        }
+        return !cruzaFrontera() || origen.getPais().obtenerArancel(destino.getPais(), producto).signum() >= 0;
+    }
+
+    // el arancel se toma como fracción del valor unitario (0.10 = 10%)
     public BigDecimal calcularCosto(Producto producto) {
-        throw new UnsupportedOperationException("Pendiente de implementar");
+        if (!cruzaFrontera()) {
+            return costoUnitario;
+        }
+        BigDecimal arancel = origen.getPais().obtenerArancel(destino.getPais(), producto);
+        return costoUnitario.add(producto.getValorUnitario().multiply(arancel));
     }
 }

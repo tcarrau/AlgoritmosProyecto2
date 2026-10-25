@@ -1,5 +1,8 @@
 package ucu.edu.aed.comercio;
 
+import ucu.edu.aed.tda.grafo.DirectedGraph;
+import ucu.edu.aed.tda.grafo.model.edge.Edge;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,19 +29,47 @@ public class SistemaComercio {
     public void setTramos(List<Tramo> tramos) { this.tramos = tramos; }
 
     public void registrarPais(Pais pais) {
-        throw new UnsupportedOperationException("Pendiente de implementar");
+        paises.put(pais.getNombre(), pais);
     }
 
     public void registrarProducto(Producto producto) {
-        throw new UnsupportedOperationException("Pendiente de implementar");
+        productos.put(producto.getNombre(), producto);
     }
 
     public void registrarNodo(NodoLogistico nodo) {
-        throw new UnsupportedOperationException("Pendiente de implementar");
+        nodos.put(nodo.getNombre(), nodo);
     }
 
     public void registrarTramo(Tramo tramo) {
-        throw new UnsupportedOperationException("Pendiente de implementar");
+        tramos.add(tramo);
+    }
+
+    /** Grafo de los nodos y tramos que sirven para el producto; criterio "COSTO" o "TIEMPO". */
+    public DirectedGraph<NodoLogistico, ArcoTramo> construirGrafo(Producto producto, String criterio) {
+        boolean porCosto = criterio.equalsIgnoreCase("COSTO");
+        if (!porCosto && !criterio.equalsIgnoreCase("TIEMPO")) {
+            throw new IllegalArgumentException("Criterio desconocido: " + criterio);
+        }
+        DirectedGraph<NodoLogistico, ArcoTramo> g = new DirectedGraph<>();
+        for (NodoLogistico n : nodos.values()) {
+            if (n.admite(producto)) {
+                g.agregarVertice(n);
+            }
+        }
+        for (Tramo t : tramos) {
+            if (!g.vertices().contains(t.getOrigen()) || !g.vertices().contains(t.getDestino())
+                    || !t.esUtilizable(producto)) {
+                continue;
+            }
+            double peso = (porCosto ? t.calcularCosto(producto) : t.getTiempo()).doubleValue();
+            Edge<NodoLogistico, ArcoTramo> previa = g.obtenerArista(t.getOrigen(), t.getDestino());
+            if (previa != null && previa.dato().getWeight() <= peso) {
+                continue;
+            }
+            g.eliminarArista(g.construirComparable(t.getOrigen()), g.construirComparable(t.getDestino()));
+            g.agregarArista(t.getOrigen(), t.getDestino(), new ArcoTramo(peso, t));
+        }
+        return g;
     }
 
     public void registrarIntercambio(Pais origen, Pais destino, Producto producto, BigDecimal cantidad) {
