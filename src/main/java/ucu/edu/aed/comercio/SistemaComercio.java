@@ -1,11 +1,18 @@
 package ucu.edu.aed.comercio;
 
 import ucu.edu.aed.tda.grafo.DirectedGraph;
+import ucu.edu.aed.tda.grafo.ShortestPathAlgorithms;
+import ucu.edu.aed.tda.grafo.UndirectedGraph;
+import ucu.edu.aed.tda.grafo.UndirectedGraphAlgorithm;
 import ucu.edu.aed.tda.grafo.model.edge.Edge;
 
 import java.math.BigDecimal;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +77,68 @@ public class SistemaComercio {
             g.agregarArista(t.getOrigen(), t.getDestino(), new ArcoTramo(peso, t));
         }
         return g;
+    }
+
+    /**
+     * dependientes: por cada punto de articulación de la red, los nodos del país que quedan
+     * sin salida al exterior si ese nodo falla; afectados: unión de todos ellos;
+     * excentricidad: la menor entre los nodos del país (infinita si no tiene nodos en la red
+     * o ninguno alcanza al resto).
+     */
+    public record Vulnerabilidad(Map<NodoLogistico, Set<NodoLogistico>> dependientes,
+                                 Set<NodoLogistico> afectados, double excentricidad) {}
+
+    public Vulnerabilidad vulnerabilidad(Pais pais, Producto producto) {
+        DirectedGraph<NodoLogistico, ArcoTramo> g = construirGrafo(producto, "TIEMPO");
+        UndirectedGraph<NodoLogistico, ArcoTramo> subyacente = new UndirectedGraph<>();
+        Map<NodoLogistico, Set<NodoLogistico>> vecinos = new LinkedHashMap<>();
+        for (NodoLogistico n : g.vertices()) {
+            subyacente.agregarVertice(n);
+            vecinos.put(n, new LinkedHashSet<>());
+        }
+        for (Edge<NodoLogistico, ArcoTramo> e : g.aristas()) {
+            subyacente.agregarArista(e.source(), e.target(), e.dato());
+            vecinos.get(e.source()).add(e.target());
+            vecinos.get(e.target()).add(e.source());
+        }
+
+        Map<NodoLogistico, Set<NodoLogistico>> dependientes = new LinkedHashMap<>();
+        Set<NodoLogistico> afectados = new LinkedHashSet<>();
+        for (NodoLogistico critico : new UndirectedGraphAlgorithm().puntosDeArticulacion(subyacente)) {
+            Set<NodoLogistico> sinSalida = new LinkedHashSet<>();
+            Set<NodoLogistico> visto = new HashSet<>(Set.of(critico));
+            for (NodoLogistico inicio : vecinos.keySet()) {
+                if (!visto.add(inicio)) {
+                    continue;
+                }
+                List<NodoLogistico> componente = new ArrayList<>(List.of(inicio));
+                Deque<NodoLogistico> pila = new ArrayDeque<>(componente);
+                while (!pila.isEmpty()) {
+                    for (NodoLogistico v : vecinos.get(pila.pop())) {
+                        if (visto.add(v)) {
+                            componente.add(v);
+                            pila.push(v);
+                        }
+                    }
+                }
+                if (componente.stream().allMatch(n -> pais.equals(n.getPais()))) {
+                    sinSalida.addAll(componente);
+                }
+            }
+            if (!sinSalida.isEmpty()) {
+                dependientes.put(critico, sinSalida);
+                afectados.addAll(sinSalida);
+            }
+        }
+
+        ShortestPathAlgorithms caminos = new ShortestPathAlgorithms();
+        double excentricidad = Double.POSITIVE_INFINITY;
+        for (NodoLogistico n : g.vertices()) {
+            if (pais.equals(n.getPais())) {
+                excentricidad = Math.min(excentricidad, caminos.obtenerExcentricidad(g, g.construirComparable(n)));
+            }
+        }
+        return new Vulnerabilidad(dependientes, afectados, excentricidad);
     }
 
     public void registrarIntercambio(Pais origen, Pais destino, Producto producto, BigDecimal cantidad) {
