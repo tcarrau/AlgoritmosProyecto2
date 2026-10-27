@@ -35,10 +35,42 @@ public class Tramo {
     public void setActivo(Boolean activo) { this.activo = activo; }
 
     public boolean esUtilizable(Producto producto) {
-        throw new UnsupportedOperationException("Pendiente de implementar");
+        if (Boolean.FALSE.equals(activo)) {
+            return false;
+        }
+        if (origen == null || destino == null) {
+            return false;
+        }
+        if (!origen.admite(producto) || !destino.admite(producto)) {
+            return false;
+        }
+        if (producto != null && producto.getTipoCarga() != null
+                && tiposCargaAdmitidos != null && !tiposCargaAdmitidos.isEmpty()
+                && !tiposCargaAdmitidos.contains(producto.getTipoCarga())) {
+            return false;
+        }
+        Pais paisOrigen = origen.getPais();
+        Pais paisDestino = destino.getPais();
+        if (paisOrigen != null && paisDestino != null && !paisOrigen.equals(paisDestino)) {
+            if (producto != null) {
+                return paisOrigen.permiteComercioCon(paisDestino, producto);
+            } else {
+                return paisOrigen.permiteComercioCon(paisDestino);
+            }
+        }
+        return true;
     }
 
     public BigDecimal calcularCosto(Producto producto) {
-        throw new UnsupportedOperationException("Pendiente de implementar");
+        BigDecimal base = costoUnitario != null ? costoUnitario : BigDecimal.ZERO;
+        if (origen != null && destino != null
+                && origen.getPais() != null && destino.getPais() != null
+                && !origen.getPais().equals(destino.getPais()) && producto != null) {
+            BigDecimal arancel = origen.getPais().obtenerArancel(destino.getPais(), producto);
+            if (arancel != null && arancel.compareTo(BigDecimal.ZERO) > 0) {
+                return base.add(arancel);
+            }
+        }
+        return base;
     }
 }

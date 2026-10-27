@@ -26,6 +26,15 @@ public class NodoLogistico {
     public void setActivo(Boolean activo) { this.activo = activo; }
 
     public boolean admite(Producto producto) {
-        throw new UnsupportedOperationException("Pendiente de implementar");
+        if (Boolean.FALSE.equals(activo)) {
+            return false;
+        }
+        if (producto == null || producto.getTipoCarga() == null) {
+            return true;
+        }
+        if (tiposCargaAdmitidos == null || tiposCargaAdmitidos.isEmpty()) {
+            return true;
+        }
+        return tiposCargaAdmitidos.contains(producto.getTipoCarga());
     }
 }
