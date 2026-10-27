@@ -1,7 +1,16 @@
 package ucu.edu.aed.comercio;
 
+import ucu.edu.aed.tda.grafo.DirectedGraph;
+import ucu.edu.aed.tda.grafo.ShortestPathAlgorithms;
+import ucu.edu.aed.tda.grafo.UndirectedGraph;
+import ucu.edu.aed.tda.grafo.UndirectedGraphAlgorithm;
+import ucu.edu.aed.tda.grafo.model.edge.Edge;
+
 import java.math.BigDecimal;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -42,33 +51,109 @@ public class SistemaComercio {
     // =======================================================================
 
     public void registrarPais(Pais pais) {
-        if (pais != null && pais.getNombre() != null) {
-            paises.put(pais.getNombre(), pais);
-        }
+        paises.put(pais.getNombre(), pais);
     }
 
     public void registrarProducto(Producto producto) {
-        if (producto != null && producto.getNombre() != null) {
-            productos.put(producto.getNombre(), producto);
-        }
+        productos.put(producto.getNombre(), producto);
     }
 
     public void registrarNodo(NodoLogistico nodo) {
-        if (nodo != null && nodo.getNombre() != null) {
-            if (nodo.getActivo() == null) {
-                nodo.setActivo(true);
-            }
-            nodos.put(nodo.getNombre(), nodo);
-        }
+        nodos.put(nodo.getNombre(), nodo);
     }
 
     public void registrarTramo(Tramo tramo) {
-        if (tramo != null) {
-            if (tramo.getActivo() == null) {
-                tramo.setActivo(true);
-            }
-            tramos.add(tramo);
+        tramos.add(tramo);
+    }
+
+    /** Grafo de los nodos y tramos que sirven para el producto; criterio "COSTO" o "TIEMPO". */
+    public DirectedGraph<NodoLogistico, ArcoTramo> construirGrafo(Producto producto, String criterio) {
+        boolean porCosto = criterio.equalsIgnoreCase("COSTO");
+        if (!porCosto && !criterio.equalsIgnoreCase("TIEMPO")) {
+            throw new IllegalArgumentException("Criterio desconocido: " + criterio);
         }
+        DirectedGraph<NodoLogistico, ArcoTramo> g = new DirectedGraph<>();
+        for (NodoLogistico n : nodos.values()) {
+            if (n.admite(producto)) {
+                g.agregarVertice(n);
+            }
+        }
+        for (Tramo t : tramos) {
+            if (!g.vertices().contains(t.getOrigen()) || !g.vertices().contains(t.getDestino())
+                    || !t.esUtilizable(producto)) {
+                continue;
+            }
+            double peso = (porCosto ? t.calcularCosto(producto) : t.getTiempo()).doubleValue();
+            Edge<NodoLogistico, ArcoTramo> previa = g.obtenerArista(t.getOrigen(), t.getDestino());
+            if (previa != null && previa.dato().getWeight() <= peso) {
+                continue;
+            }
+            g.eliminarArista(g.construirComparable(t.getOrigen()), g.construirComparable(t.getDestino()));
+            g.agregarArista(t.getOrigen(), t.getDestino(), new ArcoTramo(peso, t));
+        }
+        return g;
+    }
+
+    /**
+     * dependientes: por cada punto de articulación de la red, los nodos del país que quedan
+     * sin salida al exterior si ese nodo falla; afectados: unión de todos ellos;
+     * excentricidad: la menor entre los nodos del país (infinita si no tiene nodos en la red
+     * o ninguno alcanza al resto).
+     */
+    public record Vulnerabilidad(Map<NodoLogistico, Set<NodoLogistico>> dependientes,
+                                 Set<NodoLogistico> afectados, double excentricidad) {}
+
+    public Vulnerabilidad vulnerabilidad(Pais pais, Producto producto) {
+        DirectedGraph<NodoLogistico, ArcoTramo> g = construirGrafo(producto, "TIEMPO");
+        UndirectedGraph<NodoLogistico, ArcoTramo> subyacente = new UndirectedGraph<>();
+        Map<NodoLogistico, Set<NodoLogistico>> vecinos = new LinkedHashMap<>();
+        for (NodoLogistico n : g.vertices()) {
+            subyacente.agregarVertice(n);
+            vecinos.put(n, new LinkedHashSet<>());
+        }
+        for (Edge<NodoLogistico, ArcoTramo> e : g.aristas()) {
+            subyacente.agregarArista(e.source(), e.target(), e.dato());
+            vecinos.get(e.source()).add(e.target());
+            vecinos.get(e.target()).add(e.source());
+        }
+
+        Map<NodoLogistico, Set<NodoLogistico>> dependientes = new LinkedHashMap<>();
+        Set<NodoLogistico> afectados = new LinkedHashSet<>();
+        for (NodoLogistico critico : new UndirectedGraphAlgorithm().puntosDeArticulacion(subyacente)) {
+            Set<NodoLogistico> sinSalida = new LinkedHashSet<>();
+            Set<NodoLogistico> visto = new HashSet<>(Set.of(critico));
+            for (NodoLogistico inicio : vecinos.keySet()) {
+                if (!visto.add(inicio)) {
+                    continue;
+                }
+                List<NodoLogistico> componente = new ArrayList<>(List.of(inicio));
+                Deque<NodoLogistico> pila = new ArrayDeque<>(componente);
+                while (!pila.isEmpty()) {
+                    for (NodoLogistico v : vecinos.get(pila.pop())) {
+                        if (visto.add(v)) {
+                            componente.add(v);
+                            pila.push(v);
+                        }
+                    }
+                }
+                if (componente.stream().allMatch(n -> pais.equals(n.getPais()))) {
+                    sinSalida.addAll(componente);
+                }
+            }
+            if (!sinSalida.isEmpty()) {
+                dependientes.put(critico, sinSalida);
+                afectados.addAll(sinSalida);
+            }
+        }
+
+        ShortestPathAlgorithms caminos = new ShortestPathAlgorithms();
+        double excentricidad = Double.POSITIVE_INFINITY;
+        for (NodoLogistico n : g.vertices()) {
+            if (pais.equals(n.getPais())) {
+                excentricidad = Math.min(excentricidad, caminos.obtenerExcentricidad(g, g.construirComparable(n)));
+            }
+        }
+        return new Vulnerabilidad(dependientes, afectados, excentricidad);
     }
 
     public void registrarIntercambio(Pais origen, Pais destino, Producto producto, BigDecimal cantidad) {

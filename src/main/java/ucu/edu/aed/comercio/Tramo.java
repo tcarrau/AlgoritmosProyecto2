@@ -2,6 +2,7 @@ package ucu.edu.aed.comercio;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Tramo {
@@ -34,43 +35,23 @@ public class Tramo {
     public Boolean getActivo() { return activo; }
     public void setActivo(Boolean activo) { this.activo = activo; }
 
-    public boolean esUtilizable(Producto producto) {
-        if (Boolean.FALSE.equals(activo)) {
-            return false;
-        }
-        if (origen == null || destino == null) {
-            return false;
-        }
-        if (!origen.admite(producto) || !destino.admite(producto)) {
-            return false;
-        }
-        if (producto != null && producto.getTipoCarga() != null
-                && tiposCargaAdmitidos != null && !tiposCargaAdmitidos.isEmpty()
-                && !tiposCargaAdmitidos.contains(producto.getTipoCarga())) {
-            return false;
-        }
-        Pais paisOrigen = origen.getPais();
-        Pais paisDestino = destino.getPais();
-        if (paisOrigen != null && paisDestino != null && !paisOrigen.equals(paisDestino)) {
-            if (producto != null) {
-                return paisOrigen.permiteComercioCon(paisDestino, producto);
-            } else {
-                return paisOrigen.permiteComercioCon(paisDestino);
-            }
-        }
-        return true;
+    private boolean cruzaFrontera() {
+        return !Objects.equals(origen.getPais(), destino.getPais());
     }
 
-    public BigDecimal calcularCosto(Producto producto) {
-        BigDecimal base = costoUnitario != null ? costoUnitario : BigDecimal.ZERO;
-        if (origen != null && destino != null
-                && origen.getPais() != null && destino.getPais() != null
-                && !origen.getPais().equals(destino.getPais()) && producto != null) {
-            BigDecimal arancel = origen.getPais().obtenerArancel(destino.getPais(), producto);
-            if (arancel != null && arancel.compareTo(BigDecimal.ZERO) > 0) {
-                return base.add(arancel);
-            }
+    public boolean esUtilizable(Producto producto) {
+        if (!Boolean.TRUE.equals(activo) || !tiposCargaAdmitidos.contains(producto.getTipoCarga())) {
+            return false;
         }
-        return base;
+        return !cruzaFrontera() || origen.getPais().obtenerArancel(destino.getPais(), producto).signum() >= 0;
+    }
+
+    // el arancel se toma como fracción del valor unitario (0.10 = 10%)
+    public BigDecimal calcularCosto(Producto producto) {
+        if (!cruzaFrontera()) {
+            return costoUnitario;
+        }
+        BigDecimal arancel = origen.getPais().obtenerArancel(destino.getPais(), producto);
+        return costoUnitario.add(producto.getValorUnitario().multiply(arancel));
     }
 }

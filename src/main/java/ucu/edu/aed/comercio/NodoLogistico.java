@@ -1,6 +1,7 @@
 package ucu.edu.aed.comercio;
 
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class NodoLogistico {
@@ -26,15 +27,21 @@ public class NodoLogistico {
     public void setActivo(Boolean activo) { this.activo = activo; }
 
     public boolean admite(Producto producto) {
-        if (Boolean.FALSE.equals(activo)) {
-            return false;
-        }
-        if (producto == null || producto.getTipoCarga() == null) {
-            return true;
-        }
-        if (tiposCargaAdmitidos == null || tiposCargaAdmitidos.isEmpty()) {
-            return true;
-        }
-        return tiposCargaAdmitidos.contains(producto.getTipoCarga());
+        return Boolean.TRUE.equals(activo) && tiposCargaAdmitidos.contains(producto.getTipoCarga());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof NodoLogistico n && Objects.equals(nombre, n.nombre);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(nombre);
+    }
+
+    @Override
+    public String toString() {
+        return nombre;
     }
 }
