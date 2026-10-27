@@ -1,66 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0" tests="10" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.002" tests="10" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
-    <property name="sun.jnu.encoding" value="UTF-8"/>
-    <property name="java.class.path" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/test-classes:/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/classes:/Users/tomascarrau/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="C:\Users\ezefe\Desktop\UCU\2° -2do Sem\AyED\Proyecto II\AlgoritmosProyecto2\AlgoritmosProyecto2\target\test-classes;C:\Users\ezefe\Desktop\UCU\2° -2do Sem\AyED\Proyecto II\AlgoritmosProyecto2\AlgoritmosProyecto2\target\classes;C:\Users\ezefe\.m2\repository\junit\junit\3.8.1\junit-3.8.1.jar;"/>
     <property name="java.vm.vendor" value="Eclipse Adoptium"/>
     <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
     <property name="java.vendor.url" value="https://adoptium.net/"/>
-    <property name="os.name" value="Mac OS X"/>
+    <property name="user.timezone" value="America/Montevideo"/>
+    <property name="os.name" value="Windows 11"/>
     <property name="java.vm.specification.version" value="17"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
-    <property name="user.country" value="ES"/>
-    <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/surefire/surefirebooter-20261014182918464_3.jar /Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/surefire 2026-10-14T18-29-18_334-jvmRun1 surefire-20261014182918464_1tmp surefire_0-20261014182918464_2tmp"/>
+    <property name="user.country" value="UY"/>
+    <property name="sun.boot.library.path" value="C:\Users\ezefe\AppData\Local\Programs\Eclipse Adoptium\jdk-17.0.18.8-hotspot\bin"/>
+    <property name="sun.java.command" value="C:\Users\ezefe\AppData\Local\Temp\surefire28337750021148320\surefirebooter-20261025223909704_3.jar C:\Users\ezefe\AppData\Local\Temp\surefire28337750021148320 2026-10-25T22-39-09_250-jvmRun1 surefire-20261025223909704_1tmp surefire_0-20261025223909704_2tmp"/>
     <property name="jdk.debug" value="release"/>
-    <property name="surefire.test.class.path" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/test-classes:/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/classes:/Users/tomascarrau/.m2/repository/junit/junit/3.8.1/junit-3.8.1.jar:"/>
+    <property name="surefire.test.class.path" value="C:\Users\ezefe\Desktop\UCU\2° -2do Sem\AyED\Proyecto II\AlgoritmosProyecto2\AlgoritmosProyecto2\target\test-classes;C:\Users\ezefe\Desktop\UCU\2° -2do Sem\AyED\Proyecto II\AlgoritmosProyecto2\AlgoritmosProyecto2\target\classes;C:\Users\ezefe\.m2\repository\junit\junit\3.8.1\junit-3.8.1.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
-    <property name="user.home" value="/Users/tomascarrau"/>
+    <property name="user.home" value="C:\Users\ezefe"/>
     <property name="user.language" value="es"/>
     <property name="java.specification.vendor" value="Oracle Corporation"/>
-    <property name="java.version.date" value="2026-07-21"/>
-    <property name="java.home" value="/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home"/>
-    <property name="file.separator" value="/"/>
-    <property name="basedir" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2"/>
-    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="java.version.date" value="2026-01-20"/>
+    <property name="java.home" value="C:\Users\ezefe\AppData\Local\Programs\Eclipse Adoptium\jdk-17.0.18.8-hotspot"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\Users\ezefe\Desktop\UCU\2° -2do Sem\AyED\Proyecto II\AlgoritmosProyecto2\AlgoritmosProyecto2"/>
+    <property name="java.vm.compressedOopsMode" value="32-bit"/>
     <property name="line.separator" value="&#10;"/>
-    <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
-    <property name="surefire.real.class.path" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2/target/surefire/surefirebooter-20261014182918464_3.jar"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\ezefe\AppData\Local\Temp\surefire28337750021148320\surefirebooter-20261025223909704_3.jar"/>
+    <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
-    <property name="java.runtime.version" value="17.0.20+8"/>
-    <property name="user.name" value="tomascarrau"/>
-    <property name="path.separator" value=":"/>
-    <property name="os.version" value="26.6.2"/>
+    <property name="java.runtime.version" value="17.0.18+8"/>
+    <property name="user.name" value="ezefe"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
-    <property name="file.encoding" value="UTF-8"/>
+    <property name="file.encoding" value="Cp1252"/>
     <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
-    <property name="java.vendor.version" value="Temurin-17.0.20+8"/>
-    <property name="localRepository" value="/Users/tomascarrau/.m2/repository"/>
+    <property name="java.vendor.version" value="Temurin-17.0.18+8"/>
+    <property name="localRepository" value="C:\Users\ezefe\.m2\repository"/>
     <property name="java.vendor.url.bug" value="https://github.com/adoptium/adoptium-support/issues"/>
-    <property name="java.io.tmpdir" value="/var/folders/_1/c8sq925j6qj7tgvk4fp1dc0c0000gn/T/"/>
-    <property name="java.version" value="17.0.20"/>
-    <property name="user.dir" value="/Users/tomascarrau/Documents/UCU/2doSemestre/AlgoritmosYEstrucutas/AlgoritmosProyecto2"/>
-    <property name="os.arch" value="x86_64"/>
+    <property name="java.io.tmpdir" value="C:\Users\ezefe\AppData\Local\Temp\"/>
+    <property name="java.version" value="17.0.18"/>
+    <property name="user.dir" value="C:\Users\ezefe\Desktop\UCU\2° -2do Sem\AyED\Proyecto II\AlgoritmosProyecto2\AlgoritmosProyecto2"/>
+    <property name="os.arch" value="amd64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
-    <property name="native.encoding" value="UTF-8"/>
-    <property name="java.library.path" value="/Users/tomascarrau/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
-    <property name="java.vm.info" value="mixed mode"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Users\ezefe\AppData\Local\Programs\Eclipse Adoptium\jdk-17.0.18.8-hotspot\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;c:\Users\ezefe\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\ezefe\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Users\ezefe\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\ezefe\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0;C:\WINDOWS\System32\OpenSSH;C:\Program Files\Git\cmd;C:\Program Files\nodejs;C:\ProgramData\chocolatey\bin;C:\Program Files\PuTTY;C:\Users\ezefe\AppData\Local\Programs\Eclipse Adoptium\jdk-17.0.18.8-hotspot\bin;C:\Users\ezefe\AppData\Local\Programs\Eclipse Adoptium\jdk-25.0.2.10-hotspot\bin;C:\Users\ezefe\AppData\Local\Programs\Python\Launcher;C:\Users\ezefe\AppData\Local\Microsoft\WindowsApps;C:\Users\ezefe\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\ezefe\Desktop\UCU\2°-1er Sem\AyD\Maven\apache-maven-3.9.13-bin\apache-maven-3.9.13\bin;C:\Users\ezefe\AppData\Local\GitHubDesktop\bin;C:\Users\ezefe\AppData\Roaming\npm;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl;c:\Users\ezefe\.vscode\extensions\vscjava.vscode-java-debug-0.60.0\bundled\scripts\noConfigScripts;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
     <property name="java.vendor" value="Eclipse Adoptium"/>
-    <property name="java.vm.version" value="17.0.20+8"/>
+    <property name="java.vm.version" value="17.0.18+8"/>
     <property name="java.specification.maintenance.version" value="1"/>
-    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testVacio" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
-  <testcase name="testUnVertice" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
-  <testcase name="testVerticeInexistente" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
   <testcase name="testDireccionSucesoresPredecesores" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
   <testcase name="testBidireccionalSonDosAristas" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
+  <testcase name="testRemoverVerticeLimpiaAristas" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
+  <testcase name="testVerticeInexistente" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
+  <testcase name="testUnVertice" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
+  <testcase name="testVacio" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
+  <testcase name="testVaciar" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
+  <testcase name="testAutociclo" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
   <testcase name="testConexidadDebil" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
   <testcase name="testCiclos" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
-  <testcase name="testAutociclo" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
-  <testcase name="testRemoverVerticeLimpiaAristas" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
-  <testcase name="testVaciar" classname="ucu.edu.aed.tda.grafo.DirectedGraphTest" time="0.0"/>
 </testsuite>
