@@ -2,6 +2,7 @@
 # PAIS|nombre
 # PRODUCTO|nombre|categoria|tipoCarga|valorUnitario
 # PRODUCE|pais|producto
+# DEPENDENCIA|insumo|productoFinal (opcional; insumo antes que productoFinal)
 # NODO|nombre|tipo|pais|cargas
 # TRAMO|origen|destino|medio|costo|tiempo|cargas|bidireccional(S/N)
 # ACUERDO|paisA|paisB|tipo|arancel            (ambos sentidos)

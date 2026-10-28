@@ -106,7 +106,7 @@ public class ArnesMedicion {
         Pais pOrigen = paises.get(0);
         Pais pDestino = paises.get(paises.size() - 1);
 
-       
+
         long t0 = System.nanoTime();
         for (int q = 0; q < cantidadConsultas; q++) {
             sistema.puedeEnviarProducto(pOrigen, pDestino, prod);
