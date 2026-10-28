@@ -55,7 +55,6 @@ public class CargadorDataset {
                 sistema.registrarProducto(p);
             }
             case "PRODUCE" -> pais(f[1]).getProductosProducidos().add(producto(f[2]));
-            case "DEPENDENCIA" -> sistema.registrarDependenciaProductiva(producto(f[1]), producto(f[2]));
             case "NODO" -> {
                 NodoLogistico n = new NodoLogistico();
                 n.setNombre(f[1]);
