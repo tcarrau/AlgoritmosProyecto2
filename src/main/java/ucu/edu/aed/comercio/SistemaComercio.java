@@ -226,12 +226,14 @@ public class SistemaComercio {
     public Set<NodoLogistico> obtenerNodosCriticos() {
         UndirectedGraph<NodoLogistico, WeightedEdge> grafoSubyacente = new UndirectedGraph<>();
         for (NodoLogistico nodo : nodos.values()) {
-            if (!Boolean.FALSE.equals(nodo.getActivo())) {
+            if (Boolean.TRUE.equals(nodo.getActivo())) {
                 grafoSubyacente.agregarVertice(nodo);
             }
         }
         for (Tramo tramo : tramos) {
-            if (tramo.esUtilizable(null)) {
+            if (Boolean.TRUE.equals(tramo.getActivo())
+                    && grafoSubyacente.vertices().contains(tramo.getOrigen())
+                    && grafoSubyacente.vertices().contains(tramo.getDestino())) {
                 double peso = tramo.getCostoUnitario() != null ? tramo.getCostoUnitario().doubleValue() : 1.0;
                 grafoSubyacente.agregarArista(tramo.getOrigen(), tramo.getDestino(), new WeightedEdge(peso));
             }
@@ -244,8 +246,9 @@ public class SistemaComercio {
      */
     public void analizarCambio() {
         obtenerNodosCriticos();
-        IDirectedIGraph<NodoLogistico, WeightedEdge> grafo = construirGrafoDirigido(null);
-        algoritmosDirigidos.warshall(grafo);
+        for (Producto p : productos.values()) {
+            algoritmosDirigidos.warshall(construirGrafo(p, "COSTO"));
+        }
     }
 
 
