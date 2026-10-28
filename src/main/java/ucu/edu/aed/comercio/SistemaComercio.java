@@ -104,7 +104,7 @@ public class SistemaComercio {
             if (previa != null && previa.dato().getWeight() <= peso) {
                 continue;
             }
-            g.eliminarArista(g.construirComparable(t.getOrigen()), g.construirComparable(t.getDestino()));
+            g.eliminarArista(t.getOrigen(), t.getDestino());
             g.agregarArista(t.getOrigen(), t.getDestino(), new ArcoTramo(peso, t));
         }
         return g;

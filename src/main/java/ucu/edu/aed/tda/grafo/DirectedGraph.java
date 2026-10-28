@@ -46,9 +46,21 @@ public class DirectedGraph<V, D> implements IDirectedIGraph<V, D> {
     @Override
     public boolean eliminarArista(Comparable<V> source, Comparable<V> target) {
         V s = resolver(source), t = resolver(target);
-        if (s == null || t == null || out.get(s).remove(t) == null) return false;
-        in.get(t).remove(s);
+        return s != null && t != null && eliminarArista(s, t);
+    }
+
+    /** Acceso directo por hash: O(1) cuando ya se tienen los vértices. */
+    public boolean eliminarArista(V source, V target) {
+        Map<V, DirectedEdge<V, D>> salientes = out.get(source);
+        if (salientes == null || salientes.remove(target) == null) return false;
+        in.get(target).remove(source);
         return true;
+    }
+
+    @Override
+    public Edge<V, D> obtenerArista(V source, V target) {
+        Map<V, DirectedEdge<V, D>> salientes = out.get(source);
+        return salientes == null ? null : salientes.get(target);
     }
 
     @Override
