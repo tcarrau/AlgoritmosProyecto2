@@ -7,6 +7,7 @@ import ucu.edu.aed.tda.grafo.model.edge.Edge;
 import java.math.BigDecimal;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,9 +46,14 @@ public class ConsultasExternasTest extends TestCase {
     }
 
     private Tramo tramo(NodoLogistico origen, NodoLogistico destino, int costo) {
+        return tramo(origen, destino, costo, "camion");
+    }
+
+    private Tramo tramo(NodoLogistico origen, NodoLogistico destino, int costo, String medio) {
         Tramo tramo = new Tramo();
         tramo.setOrigen(origen);
         tramo.setDestino(destino);
+        tramo.setMedio(medio);
         tramo.setActivo(true);
         tramo.setCostoUnitario(BigDecimal.valueOf(costo));
         tramo.setTiempo(BigDecimal.ONE);
@@ -68,36 +74,38 @@ public class ConsultasExternasTest extends TestCase {
         assertEquals(Set.of(indispensable), sistema.tramosCriticos(carga));
     }
 
-    public void testTramosRedundantesUsaCostoMinimoYExcluyeEmpates() {
-        NodoLogistico a = nodo("A", pais);
-        NodoLogistico b = nodo("B", pais);
-        NodoLogistico c = nodo("C", pais);
-        tramo(a, b, 2);
-        tramo(b, c, 3);
-        Tramo caro = tramo(a, c, 10);
-        Tramo paralelo = tramo(a, c, 8);
-        tramo(a, c, 5);
-
-        assertEquals(Set.of(caro, paralelo), sistema.tramosDirectosRedundantes(carga));
-    }
-
-    public void testBloquesReciprocosIncluyeComponentesYAislados() {
+    public void testCircuitosLogisticosNoIncluyenColasSinRetorno() {
         NodoLogistico a = nodo("A", pais);
         NodoLogistico b = nodo("B", pais);
         NodoLogistico c = nodo("C", pais);
         NodoLogistico d = nodo("D", pais);
         NodoLogistico e = nodo("E", pais);
         tramo(a, b, 1);
-        tramo(b, a, 1);
         tramo(b, c, 1);
+        tramo(c, a, 1);
         tramo(c, d, 1);
-        tramo(d, c, 1);
+        tramo(e, e, 1);
 
-        List<Set<NodoLogistico>> bloques = sistema.bloquesComercioReciproco(carga);
-        assertEquals(3, bloques.size());
-        assertTrue(bloques.contains(Set.of(a, b)));
-        assertTrue(bloques.contains(Set.of(c, d)));
-        assertTrue(bloques.contains(Set.of(e)));
+        assertEquals(Set.of(a, b, c, e), sistema.nodosEnCircuitosLogisticos(carga));
+    }
+
+    public void testCoberturaComparaMediosSinUsarRutasDeOtrosMedios() {
+        NodoLogistico a = nodo("A", pais);
+        NodoLogistico b = nodo("B", pais);
+        NodoLogistico c = nodo("C", pais);
+        NodoLogistico d = nodo("D", pais);
+        tramo(a, b, 1, "camion");
+        tramo(b, c, 1, "camion");
+        tramo(c, d, 1, "barco");
+        tramo(d, c, 1, "barco");
+        tramo(a, d, 1, "avion");
+        tramo(b, d, 1, "tren").setActivo(false);
+
+        Map<String, SistemaComercio.CoberturaMedio> cobertura = sistema.coberturaPorMedio(carga);
+        assertEquals(3, cobertura.size());
+        assertEquals(new SistemaComercio.CoberturaMedio(3, 3), cobertura.get("camion"));
+        assertEquals(new SistemaComercio.CoberturaMedio(2, 2), cobertura.get("barco"));
+        assertEquals(new SistemaComercio.CoberturaMedio(2, 2), cobertura.get("avion"));
     }
 
     public void testOrdenProductivoRespetaDependenciasYDetectaCiclos() {

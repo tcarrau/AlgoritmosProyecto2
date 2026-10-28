@@ -128,50 +128,67 @@ public class SistemaComercio {
     }
 
     /**
-     * Consulta 2 - Tramos directos redundantes para un producto.
-     * Devuelve tramos utilizables cuyo costo directo supera estrictamente el
-     * costo mínimo entre los mismos extremos, calculado con Floyd. Sirve para
-     * detectar conexiones que no convienen económicamente frente a otra ruta.
+     * Consulta 2 - Nodos que participan en circuitos logísticos dirigidos.
+     * Detecta nodos que pertenecen a algún recorrido cerrado utilizable por el
+     * producto. Sirve para reconocer circuitos de transporte de ida y vuelta,
+     * independientemente de cuál sea la ruta más barata o más rápida.
      */
-    public Set<Tramo> tramosDirectosRedundantes(Producto producto) {
-        DirectedGraph<NodoLogistico, ArcoTramo> grafo = construirGrafo(producto, "COSTO");
-        IFloydWarshallResult<NodoLogistico> minimos = algoritmosDirigidos.floyd(grafo);
-        Set<Tramo> resultado = new LinkedHashSet<>();
-        for (Tramo tramo : tramos) {
-            if (grafo.vertices().contains(tramo.getOrigen())
-                    && grafo.vertices().contains(tramo.getDestino())
-                    && tramo.esUtilizable(producto)
-                    && minimos.getCost(tramo.getOrigen(), tramo.getDestino())
-                       < tramo.calcularCosto(producto).doubleValue() - 1e-9) {
-                resultado.add(tramo);
-            }
-        }
-        return resultado;
-    }
-
-    /**
-     * Consulta 3 - Bloques de comercio recíproco para un producto.
-     * Agrupa nodos que pueden alcanzarse mutuamente mediante rutas dirigidas.
-     * Identifica regiones con intercambio de ida y vuelta, no solo envíos en un
-     * sentido. Los nodos aislados aparecen como bloques de un elemento.
-     */
-    public List<Set<NodoLogistico>> bloquesComercioReciproco(Producto producto) {
+    public Set<NodoLogistico> nodosEnCircuitosLogisticos(Producto producto) {
         DirectedGraph<NodoLogistico, ArcoTramo> grafo = construirGrafo(producto, "COSTO");
         IFloydWarshallResult<NodoLogistico> alcance = algoritmosDirigidos.warshall(grafo);
-        Set<NodoLogistico> pendientes = new LinkedHashSet<>(grafo.vertices());
-        List<Set<NodoLogistico>> bloques = new ArrayList<>();
-        for (NodoLogistico origen : grafo.vertices()) {
-            if (!pendientes.contains(origen)) continue;
-            Set<NodoLogistico> bloque = new LinkedHashSet<>();
-            for (NodoLogistico destino : pendientes) {
-                if (alcance.connected(origen, destino) && alcance.connected(destino, origen)) {
-                    bloque.add(destino);
+        Set<NodoLogistico> circuitos = new LinkedHashSet<>();
+        for (Edge<NodoLogistico, ArcoTramo> arista : grafo.aristas()) {
+            if (alcance.connected(arista.target(), arista.source())) {
+                circuitos.add(arista.source());
+                circuitos.add(arista.target());
+            }
+        }
+        return circuitos;
+    }
+
+    /** Resumen de cobertura dirigida de un medio de transporte para un producto. */
+    public record CoberturaMedio(int nodosConServicio, int alcanceMaximo) {}
+
+    /**
+     * Consulta 3 - Cobertura de cada medio de transporte para un producto.
+     * Construye un subgrafo dirigido por medio y usa BEA desde cada nodo para
+     * medir su mayor alcance. Permite comparar la cobertura de barco, camión o
+     * avión sin pedir una ruta entre dos puntos concretos.
+     */
+    public Map<String, CoberturaMedio> coberturaPorMedio(Producto producto) {
+        DirectedGraph<NodoLogistico, ArcoTramo> elegibles = construirGrafo(producto, "COSTO");
+        Map<String, CoberturaMedio> resultado = new LinkedHashMap<>();
+        Set<String> medios = new LinkedHashSet<>();
+        for (Tramo tramo : tramos) {
+            if (tramo.getMedio() != null
+                    && elegibles.vertices().contains(tramo.getOrigen())
+                    && elegibles.vertices().contains(tramo.getDestino())
+                    && tramo.esUtilizable(producto)) medios.add(tramo.getMedio());
+        }
+        for (String medio : medios) {
+            DirectedGraph<NodoLogistico, ArcoTramo> grafo = new DirectedGraph<>();
+            for (NodoLogistico nodo : elegibles.vertices()) grafo.agregarVertice(nodo);
+            Set<NodoLogistico> conServicio = new LinkedHashSet<>();
+            for (Tramo tramo : tramos) {
+                if (medio.equals(tramo.getMedio())
+                        && grafo.vertices().contains(tramo.getOrigen())
+                        && grafo.vertices().contains(tramo.getDestino())
+                        && tramo.esUtilizable(producto)) {
+                    grafo.agregarArista(tramo.getOrigen(), tramo.getDestino(),
+                            new ArcoTramo(tramo.calcularCosto(producto).doubleValue(), tramo));
+                    conServicio.add(tramo.getOrigen());
+                    conServicio.add(tramo.getDestino());
                 }
             }
-            pendientes.removeAll(bloque);
-            bloques.add(bloque);
+            int alcanceMaximo = 0;
+            for (NodoLogistico origen : conServicio) {
+                Set<NodoLogistico> visitados = new LinkedHashSet<>();
+                algoritmosDirigidos.recorridoEnAmplitud(grafo, grafo.construirComparable(origen), visitados::add);
+                alcanceMaximo = Math.max(alcanceMaximo, visitados.size());
+            }
+            resultado.put(medio, new CoberturaMedio(conServicio.size(), alcanceMaximo));
         }
-        return bloques;
+        return resultado;
     }
 
     /**
