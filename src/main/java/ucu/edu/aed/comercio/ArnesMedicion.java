@@ -108,17 +108,17 @@ public class ArnesMedicion {
 
 
         long t0 = System.nanoTime();
+        boolean esperado = false;
         for (int q = 0; q < cantidadConsultas; q++) {
-            sistema.puedeEnviarProducto(pOrigen, pDestino, prod);
+            esperado = consultarSinCache(sistema, pOrigen, pDestino, prod);
         }
         double msSinOptimizar = (System.nanoTime() - t0) / 1_000_000.0;
 
-        DirectedGraphAlgorithms algDir = new DirectedGraphAlgorithms();
         long t1 = System.nanoTime();
-        IDirectedIGraph<NodoLogistico, WeightedEdge> grafo = sistema.construirGrafoDirigido(prod);
-        IFloydWarshallResult<NodoLogistico> cacheWarshall = algDir.warshall(grafo);
         for (int q = 0; q < cantidadConsultas; q++) {
-            consultarConCache(grafo, cacheWarshall, pOrigen, pDestino);
+            if (sistema.puedeEnviarProducto(pOrigen, pDestino, prod) != esperado) {
+                throw new IllegalStateException("La versión optimizada cambió el resultado");
+            }
         }
         double msOptimizado = (System.nanoTime() - t1) / 1_000_000.0;
 
@@ -136,10 +136,10 @@ public class ArnesMedicion {
         );
     }
 
-    private static boolean consultarConCache(
-            IDirectedIGraph<NodoLogistico, WeightedEdge> grafo,
-            IFloydWarshallResult<NodoLogistico> cacheWarshall,
-            Pais origen, Pais destino) {
+    private static boolean consultarSinCache(SistemaComercio sistema, Pais origen,
+                                              Pais destino, Producto producto) {
+        IDirectedIGraph<NodoLogistico, WeightedEdge> grafo = sistema.construirGrafoDirigido(producto);
+        IFloydWarshallResult<NodoLogistico> cacheWarshall = new DirectedGraphAlgorithms().warshall(grafo);
         for (NodoLogistico nOrig : grafo.vertices()) {
             if (!origen.equals(nOrig.getPais())) continue;
             for (NodoLogistico nDest : grafo.vertices()) {
@@ -159,10 +159,25 @@ public class ArnesMedicion {
         System.out.printf("%-8s %-8s %-10s %-18s %-18s %-15s%n",
                 "Nodos(V)", "Tramos", "Consultas", "Sin Opt (ms)", "Con Cache (ms)", "Articulac (ms)");
         for (int v : tamanos) {
-            ResultadoExperimento r = medirEscenario(v, consultas);
+            for (int i = 0; i < 2; i++) medirEscenario(v, consultas);
+            List<Double> sinCache = new ArrayList<>();
+            List<Double> conCache = new ArrayList<>();
+            List<Double> articulacion = new ArrayList<>();
+            ResultadoExperimento r = null;
+            for (int i = 0; i < 5; i++) {
+                r = medirEscenario(v, consultas);
+                sinCache.add(r.msSinOptimizar);
+                conCache.add(r.msOptimizadoCache);
+                articulacion.add(r.msPuntosArticulacion);
+            }
             System.out.printf("%-8d %-8d %-10d %-18.3f %-18.3f %-15.3f%n",
                     r.cantidadNodos, r.cantidadTramos, r.consultas,
-                    r.msSinOptimizar, r.msOptimizadoCache, r.msPuntosArticulacion);
+                    mediana(sinCache), mediana(conCache), mediana(articulacion));
         }
+    }
+
+    private static double mediana(List<Double> muestras) {
+        Collections.sort(muestras);
+        return muestras.get(muestras.size() / 2);
     }
 }

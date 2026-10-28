@@ -115,51 +115,24 @@ public class Pais {
     }
 
     public BigDecimal obtenerArancel(Pais destino, Producto producto) {
-        if (destino == null || producto == null)
-        {
-            return new BigDecimal(-1);
+        if (!permiteComercioCon(destino, producto)) return BigDecimal.valueOf(-1);
+        Map<Producto, BigDecimal> porProducto = arancelesPorProducto.get(destino);
+        if (porProducto != null && porProducto.containsKey(producto)) {
+            return porProducto.get(producto);
         }
-
-        if (permiteComercioCon(destino, producto)) 
-        {
-            if (arancelesPorProducto.containsKey(destino)) 
-            {
-                if (arancelesPorProducto.get(destino).containsKey(producto))
-                {
-                    return arancelesPorProducto.get(destino).get(producto);
-                }
-            }
-            else 
-            {
-                if (arancelesGenerales.containsKey(destino)) 
-                {
-                    return arancelesGenerales.get(destino);   
-                }
-            }
+        Map<String, BigDecimal> porCategoria = arancelesPorCategoria.get(destino);
+        if (porCategoria != null && porCategoria.containsKey(producto.getCategoria())) {
+            return porCategoria.get(producto.getCategoria());
         }
-
-        return new BigDecimal(-1);
-
+        return arancelesGenerales.getOrDefault(destino, BigDecimal.valueOf(-1));
     }
 
     public BigDecimal obtenerArancel(Pais destino, String categoria) {
-        if (destino == null || categoria == null) {
-            return new BigDecimal(-1);
+        if (categoria == null || !permiteComercioCon(destino)) return BigDecimal.valueOf(-1);
+        Map<String, BigDecimal> porCategoria = arancelesPorCategoria.get(destino);
+        if (porCategoria != null && porCategoria.containsKey(categoria)) {
+            return porCategoria.get(categoria);
         }
-
-        if (permiteComercioCon(destino)) {
-            if (arancelesPorCategoria.containsKey(destino)) {
-                if (arancelesPorCategoria.get(destino).containsKey(categoria)){
-                    return arancelesPorCategoria.get(destino).get(categoria);
-                }
-            }
-            else {
-                if (arancelesGenerales.containsKey(destino)) {
-                    return arancelesGenerales.get(destino);   
-                }
-            }
-        }
-
-        return new BigDecimal(-1);
+        return arancelesGenerales.getOrDefault(destino, BigDecimal.valueOf(-1));
     }
 }

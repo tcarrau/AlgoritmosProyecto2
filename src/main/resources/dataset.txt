@@ -7,7 +7,8 @@
 # TRAMO|origen|destino|medio|costo|tiempo|cargas|bidireccional(S/N)
 # ACUERDO|paisA|paisB|tipo|arancel            (ambos sentidos)
 # ARANCEL|origen|destino|tipo|arancel         (un sentido)
-# ARANCELPROD|origen|destino|producto|arancel (pisa el general; cargar todos los productos del par)
+# ARANCELPROD|origen|destino|producto|arancel (prioridad sobre categoría y general)
+# ARANCELCAT|origen|destino|categoria|arancel (prioridad sobre el general)
 # EMBARGO|origen|destino
 # RESTRICCION|origen|destino|producto
 
@@ -99,6 +100,7 @@ ARANCELPROD|AR|CN|harina|0.25
 ARANCELPROD|AR|CN|carne|0.2
 ARANCELPROD|AR|CN|vino|0.15
 ARANCELPROD|AR|CN|maquinaria|0.1
+ARANCELCAT|AR|DE|alimentos|0.03
 
 EMBARGO|US|CN
 RESTRICCION|BR|DE|carne
