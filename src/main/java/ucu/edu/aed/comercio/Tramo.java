@@ -52,6 +52,9 @@ public class Tramo {
             return costoUnitario;
         }
         BigDecimal arancel = origen.getPais().obtenerArancel(destino.getPais(), producto);
+        if (arancel.signum() < 0) {
+            throw new IllegalStateException("El tramo no admite comercio para el producto");
+        }
         return costoUnitario.add(producto.getValorUnitario().multiply(arancel));
     }
 }

@@ -60,4 +60,15 @@ public class CargadorDatasetTest extends TestCase {
             assertTrue(e.getMessage().startsWith("Línea 1"));
         }
     }
+
+    public void testArancelPorCategoriaSeCargaYAplicaAlProducto() {
+        Pais argentina = s.getPaises().get("AR");
+        Pais alemania = s.getPaises().get("DE");
+        Producto carne = s.getProductos().get("carne");
+        Producto soja = s.getProductos().get("soja");
+        assertEquals(0, new java.math.BigDecimal("0.03")
+                .compareTo(argentina.obtenerArancel(alemania, carne)));
+        assertEquals(0, new java.math.BigDecimal("0.04")
+                .compareTo(argentina.obtenerArancel(alemania, soja)));
+    }
 }

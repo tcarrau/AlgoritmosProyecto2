@@ -10,12 +10,14 @@ import ucu.edu.aed.tda.grafo.UndirectedGraphAlgorithm;
 import ucu.edu.aed.tda.grafo.model.edge.Edge;
 import ucu.edu.aed.tda.grafo.model.edge.WeightedEdge;
 import ucu.edu.aed.tda.grafo.model.result.IFloydWarshallResult;
+import ucu.edu.aed.tda.grafo.model.result.IDijkstraResult;
 
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,6 +35,13 @@ public class SistemaComercio {
 
     private final DirectedGraphAlgorithms algoritmosDirigidos = new DirectedGraphAlgorithms();
     private final UndirectedGraphAlgorithm algoritmosNoDirigidos = new UndirectedGraphAlgorithm();
+    private final Map<Producto, CacheAlcance> cacheAlcance = new IdentityHashMap<>();
+
+    private record EstadoNodo(String nombre, Pais pais, boolean disponible) {}
+    private record EstadoTramo(String origen, String destino, boolean utilizable) {}
+    private record EstadoRed(List<EstadoNodo> nodos, List<EstadoTramo> tramos) {}
+    private record CacheAlcance(EstadoRed estado, IDirectedIGraph<NodoLogistico, WeightedEdge> grafo,
+                                IFloydWarshallResult<NodoLogistico> cierre) {}
 
     public Map<String, Pais> getPaises() { return paises; }
     public void setPaises(Map<String, Pais> paises) { this.paises = paises; }
@@ -323,30 +332,195 @@ public class SistemaComercio {
               .add(producto);
     }
 
+    /** Productos que un país exporta a, e importa de, un socio comercial. */
+    public record Intercambio(Set<Producto> exportados, Set<Producto> importados) {}
+
+    /** Incluye todos los demás países registrados, incluso si aún no hay intercambio. */
+    public Map<Pais, Intercambio> intercambioComercial(Pais pais) {
+        if (pais == null || !paises.containsValue(pais)) {
+            throw new IllegalArgumentException("País no registrado");
+        }
+        Map<Pais, Intercambio> resultado = new LinkedHashMap<>();
+        for (Pais socio : paises.values()) {
+            if (pais == socio) continue;
+            Set<Producto> exportados = pais.getExportaciones().getOrDefault(socio, Set.of());
+            Set<Producto> importados = socio.getExportaciones().getOrDefault(pais, Set.of());
+            resultado.put(socio, new Intercambio(Set.copyOf(exportados), Set.copyOf(importados)));
+        }
+        return java.util.Collections.unmodifiableMap(resultado);
+    }
+
     public void configurarRelacionComercial(Pais origen, Pais destino, String tipoAcuerdo) {
         if (origen == null || destino == null || tipoAcuerdo == null) return;
         origen.getTiposAcuerdo().put(destino, tipoAcuerdo);
-        if ("EMBARGO".equalsIgnoreCase(tipoAcuerdo) || "SANCION".equalsIgnoreCase(tipoAcuerdo)) {
+        if ("EMBARGO".equalsIgnoreCase(tipoAcuerdo) || "SANCION".equalsIgnoreCase(tipoAcuerdo)
+                || "SANCIÓN".equalsIgnoreCase(tipoAcuerdo)) {
             origen.getDestinosEmbargados().add(destino);
         } else {
             origen.getDestinosEmbargados().remove(destino);
         }
     }
 
+    public record ParPaises(Pais origen, Pais destino) {}
+
+    /** La ausencia de un par en un mapa indica que no existe ruta comercial para el producto. */
+    public record ImpactoComercial(Map<ParPaises, BigDecimal> antes,
+                                   Map<ParPaises, BigDecimal> despues) {}
+
+    /**
+     * Simula una relación dirigida y compara el menor costo entre cada par de países.
+     * Restablece el acuerdo, el arancel y el embargo originales antes de devolver.
+     */
+    public ImpactoComercial analizarCambioRelacionComercial(Pais origen, Pais destino,
+            Producto producto, String nuevoAcuerdo, BigDecimal nuevoArancel) {
+        if (origen == null || destino == null || origen == destino
+                || !paises.containsValue(origen) || !paises.containsValue(destino)
+                || producto == null || !productos.containsValue(producto)
+                || nuevoAcuerdo == null || (nuevoArancel != null && nuevoArancel.signum() < 0)) {
+            throw new IllegalArgumentException("Cambio comercial inválido");
+        }
+        Map<ParPaises, BigDecimal> antes = costosMinimosPorPais(producto);
+        String acuerdoAnterior = origen.getTiposAcuerdo().get(destino);
+        BigDecimal arancelAnterior = origen.getArancelesGenerales().get(destino);
+        boolean embargadoAnteriormente = origen.getDestinosEmbargados().contains(destino);
+        try {
+            configurarRelacionComercial(origen, destino, nuevoAcuerdo);
+            if (nuevoArancel != null) origen.getArancelesGenerales().put(destino, nuevoArancel);
+            return new ImpactoComercial(antes, costosMinimosPorPais(producto));
+        } finally {
+            if (acuerdoAnterior == null) origen.getTiposAcuerdo().remove(destino);
+            else origen.getTiposAcuerdo().put(destino, acuerdoAnterior);
+            if (arancelAnterior == null) origen.getArancelesGenerales().remove(destino);
+            else origen.getArancelesGenerales().put(destino, arancelAnterior);
+            if (embargadoAnteriormente) origen.getDestinosEmbargados().add(destino);
+            else origen.getDestinosEmbargados().remove(destino);
+        }
+    }
+
+    private Map<ParPaises, BigDecimal> costosMinimosPorPais(Producto producto) {
+        Map<NodoLogistico, Map<NodoLogistico, BigDecimal>> porNodo = costosMinimosEntreTodos(producto);
+        Map<ParPaises, BigDecimal> porPais = new LinkedHashMap<>();
+        for (Map.Entry<NodoLogistico, Map<NodoLogistico, BigDecimal>> origen : porNodo.entrySet()) {
+            for (Map.Entry<NodoLogistico, BigDecimal> destino : origen.getValue().entrySet()) {
+                Pais paisOrigen = origen.getKey().getPais();
+                Pais paisDestino = destino.getKey().getPais();
+                if (paisOrigen == paisDestino) continue;
+                porPais.merge(new ParPaises(paisOrigen, paisDestino), destino.getValue(), BigDecimal::min);
+            }
+        }
+        return java.util.Collections.unmodifiableMap(porPais);
+    }
+
     public List<Tramo> rutaMenorCosto(NodoLogistico origen, NodoLogistico destino, Producto producto) {
-        throw new UnsupportedOperationException("Pendiente de implementar por P2");
+        return rutaMinima(origen, destino, producto, "COSTO");
     }
 
     public List<Tramo> rutaMenorTiempo(NodoLogistico origen, NodoLogistico destino, Producto producto) {
-        throw new UnsupportedOperationException("Pendiente de implementar por P2");
+        return rutaMinima(origen, destino, producto, "TIEMPO");
     }
 
+    public record DetalleRuta(boolean alcanzable, List<Tramo> tramos, List<String> medios,
+                              List<Pais> paises, BigDecimal costoTotal, BigDecimal tiempoTotal) {}
+
+    public DetalleRuta detalleRutaMenorCosto(NodoLogistico origen, NodoLogistico destino, Producto producto) {
+        return detallarRuta(origen, destino, producto, rutaMenorCosto(origen, destino, producto));
+    }
+
+    public DetalleRuta detalleRutaMenorTiempo(NodoLogistico origen, NodoLogistico destino, Producto producto) {
+        return detallarRuta(origen, destino, producto, rutaMenorTiempo(origen, destino, producto));
+    }
+
+    private DetalleRuta detallarRuta(NodoLogistico origen, NodoLogistico destino,
+                                    Producto producto, List<Tramo> tramosRuta) {
+        boolean alcanzable = origen.equals(destino) || !tramosRuta.isEmpty();
+        if (!alcanzable) return new DetalleRuta(false, List.of(), List.of(), List.of(),
+                BigDecimal.ZERO, BigDecimal.ZERO);
+        List<String> medios = new ArrayList<>();
+        List<Pais> paisesRuta = new ArrayList<>();
+        paisesRuta.add(origen.getPais());
+        BigDecimal costo = BigDecimal.ZERO;
+        BigDecimal tiempo = BigDecimal.ZERO;
+        for (Tramo tramo : tramosRuta) {
+            medios.add(tramo.getMedio());
+            Pais paisDestino = tramo.getDestino().getPais();
+            if (paisesRuta.get(paisesRuta.size() - 1) != paisDestino) paisesRuta.add(paisDestino);
+            costo = costo.add(tramo.calcularCosto(producto));
+            tiempo = tiempo.add(tramo.getTiempo());
+        }
+        return new DetalleRuta(true, tramosRuta, List.copyOf(medios), List.copyOf(paisesRuta),
+                costo, tiempo);
+    }
+
+    /** Devuelve los tramos en orden; cada tramo identifica su medio y los países de sus extremos. */
+    private List<Tramo> rutaMinima(NodoLogistico origen, NodoLogistico destino,
+                                    Producto producto, String criterio) {
+        Objects.requireNonNull(origen, "origen");
+        Objects.requireNonNull(destino, "destino");
+        DirectedGraph<NodoLogistico, ArcoTramo> grafo = construirGrafo(producto, criterio);
+        if (!grafo.vertices().contains(origen) || !grafo.vertices().contains(destino)) {
+            throw new IllegalArgumentException("Origen o destino no disponible para el producto");
+        }
+        IDijkstraResult<NodoLogistico> resultado = algoritmosDirigidos.dijkstra(
+                grafo.construirComparable(origen), grafo);
+        List<NodoLogistico> camino = resultado.getPath(destino);
+        List<Tramo> ruta = new ArrayList<>();
+        for (int i = 1; i < camino.size(); i++) {
+            ruta.add(grafo.obtenerArista(camino.get(i - 1), camino.get(i)).dato().getTramo());
+        }
+        return List.copyOf(ruta);
+    }
+
+    /** Un destino inalcanzable se omite del mapa interno; cada nodo incluye costo 0 a sí mismo. */
     public Map<NodoLogistico, Map<NodoLogistico, BigDecimal>> costosMinimosEntreTodos(Producto producto) {
-        throw new UnsupportedOperationException("Pendiente de implementar por P2");
+        DirectedGraph<NodoLogistico, ArcoTramo> grafo = construirGrafo(producto, "COSTO");
+        IFloydWarshallResult<NodoLogistico> resultado = algoritmosDirigidos.floyd(grafo);
+        Map<NodoLogistico, Map<NodoLogistico, Tramo>> tramosPorPar = new LinkedHashMap<>();
+        for (Edge<NodoLogistico, ArcoTramo> arista : grafo.aristas()) {
+            tramosPorPar.computeIfAbsent(arista.source(), k -> new LinkedHashMap<>())
+                    .put(arista.target(), arista.dato().getTramo());
+        }
+        Map<NodoLogistico, Map<NodoLogistico, BigDecimal>> costos = new LinkedHashMap<>();
+        for (NodoLogistico origen : grafo.vertices()) {
+            Map<NodoLogistico, BigDecimal> desdeOrigen = new LinkedHashMap<>();
+            for (NodoLogistico destino : grafo.vertices()) {
+                if (!resultado.connected(origen, destino)) continue;
+                BigDecimal costo = BigDecimal.ZERO;
+                List<NodoLogistico> camino = resultado.getPath(origen, destino);
+                for (int i = 1; i < camino.size(); i++) {
+                    Tramo tramo = tramosPorPar.get(camino.get(i - 1)).get(camino.get(i));
+                    costo = costo.add(tramo.calcularCosto(producto));
+                }
+                desdeOrigen.put(destino, costo);
+            }
+            costos.put(origen, java.util.Collections.unmodifiableMap(desdeOrigen));
+        }
+        return java.util.Collections.unmodifiableMap(costos);
     }
 
+    /** Centro de la red física activa según el tiempo de traslado, sin filtrar por producto. */
     public NodoLogistico obtenerCentro() {
-        throw new UnsupportedOperationException("Pendiente de implementar por P2");
+        DirectedGraph<NodoLogistico, WeightedEdge> grafo = new DirectedGraph<>();
+        for (NodoLogistico nodo : nodos.values()) {
+            if (Boolean.TRUE.equals(nodo.getActivo())) grafo.agregarVertice(nodo);
+        }
+        for (Tramo tramo : tramos) {
+            if (!Boolean.TRUE.equals(tramo.getActivo()) || tramo.getTiempo() == null
+                    || tramo.getTiempo().signum() < 0
+                    || !grafo.vertices().contains(tramo.getOrigen())
+                    || !grafo.vertices().contains(tramo.getDestino())) continue;
+            Edge<NodoLogistico, WeightedEdge> anterior = grafo.obtenerArista(tramo.getOrigen(), tramo.getDestino());
+            double tiempo = tramo.getTiempo().doubleValue();
+            if (anterior != null && anterior.dato().getWeight() <= tiempo) continue;
+            if (anterior != null) grafo.eliminarArista(grafo.construirComparable(tramo.getOrigen()),
+                    grafo.construirComparable(tramo.getDestino()));
+            grafo.agregarArista(tramo.getOrigen(), tramo.getDestino(), new WeightedEdge(tiempo));
+        }
+        return algoritmosDirigidos.obtenerCentroGrafo(grafo);
+    }
+
+    /** Centro de la red comercial utilizable por un producto, medido por tiempo. */
+    public NodoLogistico obtenerCentro(Producto producto) {
+        return algoritmosDirigidos.obtenerCentroGrafo(construirGrafo(producto, "TIEMPO"));
     }
 
     public IDirectedIGraph<NodoLogistico, WeightedEdge> construirGrafoDirigido(Producto producto) {
@@ -369,8 +543,15 @@ public class SistemaComercio {
         if (origen == null || destino == null || producto == null) {
             return false;
         }
-        IDirectedIGraph<NodoLogistico, WeightedEdge> grafo = construirGrafoDirigido(producto);
-        IFloydWarshallResult<NodoLogistico> warshallResult = algoritmosDirigidos.warshall(grafo);
+        EstadoRed estado = estadoRed(producto);
+        CacheAlcance cache = cacheAlcance.get(producto);
+        if (cache == null || !cache.estado().equals(estado)) {
+            IDirectedIGraph<NodoLogistico, WeightedEdge> grafo = construirGrafoDirigido(producto);
+            cache = new CacheAlcance(estado, grafo, algoritmosDirigidos.warshall(grafo));
+            cacheAlcance.put(producto, cache);
+        }
+        IDirectedIGraph<NodoLogistico, WeightedEdge> grafo = cache.grafo();
+        IFloydWarshallResult<NodoLogistico> warshallResult = cache.cierre();
 
         for (NodoLogistico nOrigen : grafo.vertices()) {
             if (!origen.equals(nOrigen.getPais())) continue;
@@ -382,6 +563,20 @@ public class SistemaComercio {
             }
         }
         return false;
+    }
+
+    /** Captura solo los cambios que afectan la alcanzabilidad del producto. */
+    private EstadoRed estadoRed(Producto producto) {
+        List<EstadoNodo> estadoNodos = new ArrayList<>();
+        for (NodoLogistico nodo : nodos.values()) {
+            estadoNodos.add(new EstadoNodo(nodo.getNombre(), nodo.getPais(), nodo.admite(producto)));
+        }
+        List<EstadoTramo> estadoTramos = new ArrayList<>();
+        for (Tramo tramo : tramos) {
+            estadoTramos.add(new EstadoTramo(tramo.getOrigen().getNombre(),
+                    tramo.getDestino().getNombre(), tramo.esUtilizable(producto)));
+        }
+        return new EstadoRed(estadoNodos, estadoTramos);
     }
     public Set<NodoLogistico> obtenerNodosCriticos() {
         UndirectedGraph<NodoLogistico, WeightedEdge> grafoSubyacente = new UndirectedGraph<>();

@@ -79,6 +79,9 @@ public class CargadorDataset {
             case "ARANCELPROD" -> pais(f[1]).getArancelesPorProducto()
                     .computeIfAbsent(pais(f[2]), k -> new LinkedHashMap<>())
                     .put(producto(f[3]), new BigDecimal(f[4]));
+            case "ARANCELCAT" -> pais(f[1]).getArancelesPorCategoria()
+                    .computeIfAbsent(pais(f[2]), k -> new LinkedHashMap<>())
+                    .put(f[3], new BigDecimal(f[4]));
             case "EMBARGO" -> pais(f[1]).getDestinosEmbargados().add(pais(f[2]));
             case "RESTRICCION" -> pais(f[1]).getProductosRestringidos()
                     .computeIfAbsent(pais(f[2]), k -> new LinkedHashSet<>()).add(producto(f[3]));
