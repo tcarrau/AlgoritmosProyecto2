@@ -34,6 +34,11 @@ public class SistemaComercioP3Test extends TestCase {
         crearTramo(buenosAires, montevideo, "MARITIMO", 100, 10, Set.of("GRANEL", "REFRIGERADO"));
         crearTramo(montevideo, santos, "MARITIMO", 200, 20, Set.of("GRANEL", "REFRIGERADO"));
         crearTramo(santos, madrid, "MARITIMO", 500, 50, Set.of("GRANEL", "REFRIGERADO"));
+
+        argentina.getArancelesGenerales().put(uruguay, BigDecimal.ZERO);
+        argentina.getArancelesGenerales().put(espana, BigDecimal.ZERO);
+        uruguay.getArancelesGenerales().put(brasil, BigDecimal.ZERO);
+        brasil.getArancelesGenerales().put(espana, BigDecimal.ZERO);
     }
 
     private Pais crearPais(String nombre) {
