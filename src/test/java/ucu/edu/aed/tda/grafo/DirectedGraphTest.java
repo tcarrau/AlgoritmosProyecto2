@@ -5,11 +5,15 @@ import junit.framework.TestCase;
 import java.util.Set;
 
 public class DirectedGraphTest extends TestCase {
-    private DirectedGraph<String, Integer> g;
+    protected IDirectedIGraph<String, Integer> g;
+
+    protected IDirectedIGraph<String, Integer> crear() {
+        return new DirectedGraph<>();
+    }
 
     @Override
     protected void setUp() {
-        g = new DirectedGraph<>();
+        g = crear();
     }
 
     private void vs(String... names) {
