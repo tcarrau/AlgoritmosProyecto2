@@ -1,10 +1,15 @@
 package ucu.edu.aed.comercio;
 
 import ucu.edu.aed.tda.grafo.DirectedGraph;
+import ucu.edu.aed.tda.grafo.DirectedGraphAlgorithms;
+import ucu.edu.aed.tda.grafo.IDirectedIGraph;
+import ucu.edu.aed.tda.grafo.IUndirectedGraph;
 import ucu.edu.aed.tda.grafo.ShortestPathAlgorithms;
 import ucu.edu.aed.tda.grafo.UndirectedGraph;
 import ucu.edu.aed.tda.grafo.UndirectedGraphAlgorithm;
 import ucu.edu.aed.tda.grafo.model.edge.Edge;
+import ucu.edu.aed.tda.grafo.model.edge.WeightedEdge;
+import ucu.edu.aed.tda.grafo.model.result.IFloydWarshallResult;
 
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
@@ -15,14 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import ucu.edu.aed.tda.grafo.DirectedGraph;
-import ucu.edu.aed.tda.grafo.DirectedGraphAlgorithms;
-import ucu.edu.aed.tda.grafo.IDirectedIGraph;
-import ucu.edu.aed.tda.grafo.UndirectedGraph;
-import ucu.edu.aed.tda.grafo.UndirectedGraphAlgorithm;
-import ucu.edu.aed.tda.grafo.model.edge.WeightedEdge;
-import ucu.edu.aed.tda.grafo.model.result.IFloydWarshallResult;
 
 public class SistemaComercio {
 
@@ -30,6 +29,7 @@ public class SistemaComercio {
     private Map<String, Producto> productos = new LinkedHashMap<>();
     private Map<String, NodoLogistico> nodos = new LinkedHashMap<>();
     private List<Tramo> tramos = new ArrayList<>();
+    private final Map<Producto, Set<Producto>> dependenciasProductivas = new LinkedHashMap<>();
 
     private final DirectedGraphAlgorithms algoritmosDirigidos = new DirectedGraphAlgorithms();
     private final UndirectedGraphAlgorithm algoritmosNoDirigidos = new UndirectedGraphAlgorithm();
@@ -68,6 +68,13 @@ public class SistemaComercio {
 
     /** Grafo de los nodos y tramos que sirven para el producto; criterio "COSTO" o "TIEMPO". */
     public DirectedGraph<NodoLogistico, ArcoTramo> construirGrafo(Producto producto, String criterio) {
+        return construirGrafoSinTramo(producto, criterio, null);
+    }
+
+    private DirectedGraph<NodoLogistico, ArcoTramo> construirGrafoSinTramo(
+            Producto producto, String criterio, Tramo excluido) {
+        Objects.requireNonNull(producto, "producto");
+        Objects.requireNonNull(criterio, "criterio");
         boolean porCosto = criterio.equalsIgnoreCase("COSTO");
         if (!porCosto && !criterio.equalsIgnoreCase("TIEMPO")) {
             throw new IllegalArgumentException("Criterio desconocido: " + criterio);
@@ -79,7 +86,7 @@ public class SistemaComercio {
             }
         }
         for (Tramo t : tramos) {
-            if (!g.vertices().contains(t.getOrigen()) || !g.vertices().contains(t.getDestino())
+            if (t == excluido || !g.vertices().contains(t.getOrigen()) || !g.vertices().contains(t.getDestino())
                     || !t.esUtilizable(producto)) {
                 continue;
             }
@@ -92,6 +99,142 @@ public class SistemaComercio {
             g.agregarArista(t.getOrigen(), t.getDestino(), new ArcoTramo(peso, t));
         }
         return g;
+    }
+
+    // =======================================================================
+    // Cinco consultas externas: cada resultado se calcula sobre un grafo.
+    // =======================================================================
+
+    /**
+     * Consulta 1 - Tramos críticos para un producto.
+     * Un tramo es crítico cuando, al quitarlo, ya no se puede viajar desde su
+     * origen hasta su destino. Esto permite identificar conexiones cuyo cierre
+     * interrumpe envíos; se analizan aristas, no los nodos críticos ya requeridos.
+     * Los tramos paralelos se vuelven a considerar al reconstruir el grafo.
+     */
+    public Set<Tramo> tramosCriticos(Producto producto) {
+        DirectedGraph<NodoLogistico, ArcoTramo> base = construirGrafo(producto, "COSTO");
+        Set<Tramo> resultado = new LinkedHashSet<>();
+        for (Edge<NodoLogistico, ArcoTramo> arista : base.aristas()) {
+            Tramo tramo = arista.dato().getTramo();
+            DirectedGraph<NodoLogistico, ArcoTramo> sinTramo =
+                    construirGrafoSinTramo(producto, "COSTO", tramo);
+            IFloydWarshallResult<NodoLogistico> alcance = algoritmosDirigidos.warshall(sinTramo);
+            if (!alcance.connected(arista.source(), arista.target())) {
+                resultado.add(tramo);
+            }
+        }
+        return resultado;
+    }
+
+    /**
+     * Consulta 2 - Tramos directos redundantes para un producto.
+     * Devuelve tramos utilizables cuyo costo directo supera estrictamente el
+     * costo mínimo entre los mismos extremos, calculado con Floyd. Sirve para
+     * detectar conexiones que no convienen económicamente frente a otra ruta.
+     */
+    public Set<Tramo> tramosDirectosRedundantes(Producto producto) {
+        DirectedGraph<NodoLogistico, ArcoTramo> grafo = construirGrafo(producto, "COSTO");
+        IFloydWarshallResult<NodoLogistico> minimos = algoritmosDirigidos.floyd(grafo);
+        Set<Tramo> resultado = new LinkedHashSet<>();
+        for (Tramo tramo : tramos) {
+            if (grafo.vertices().contains(tramo.getOrigen())
+                    && grafo.vertices().contains(tramo.getDestino())
+                    && tramo.esUtilizable(producto)
+                    && minimos.getCost(tramo.getOrigen(), tramo.getDestino())
+                       < tramo.calcularCosto(producto).doubleValue() - 1e-9) {
+                resultado.add(tramo);
+            }
+        }
+        return resultado;
+    }
+
+    /**
+     * Consulta 3 - Bloques de comercio recíproco para un producto.
+     * Agrupa nodos que pueden alcanzarse mutuamente mediante rutas dirigidas.
+     * Identifica regiones con intercambio de ida y vuelta, no solo envíos en un
+     * sentido. Los nodos aislados aparecen como bloques de un elemento.
+     */
+    public List<Set<NodoLogistico>> bloquesComercioReciproco(Producto producto) {
+        DirectedGraph<NodoLogistico, ArcoTramo> grafo = construirGrafo(producto, "COSTO");
+        IFloydWarshallResult<NodoLogistico> alcance = algoritmosDirigidos.warshall(grafo);
+        Set<NodoLogistico> pendientes = new LinkedHashSet<>(grafo.vertices());
+        List<Set<NodoLogistico>> bloques = new ArrayList<>();
+        for (NodoLogistico origen : grafo.vertices()) {
+            if (!pendientes.contains(origen)) continue;
+            Set<NodoLogistico> bloque = new LinkedHashSet<>();
+            for (NodoLogistico destino : pendientes) {
+                if (alcance.connected(origen, destino) && alcance.connected(destino, origen)) {
+                    bloque.add(destino);
+                }
+            }
+            pendientes.removeAll(bloque);
+            bloques.add(bloque);
+        }
+        return bloques;
+    }
+
+    /**
+     * Registra que un insumo debe estar disponible antes de producir otro producto.
+     * Esta relación crea la arista insumo -> producto final del grafo productivo.
+     */
+    public void registrarDependenciaProductiva(Producto insumo, Producto productoFinal) {
+        if (insumo == null || productoFinal == null
+                || !productos.containsValue(insumo) || !productos.containsValue(productoFinal)) {
+            throw new IllegalArgumentException("Ambos productos deben estar registrados");
+        }
+        dependenciasProductivas.computeIfAbsent(insumo, k -> new LinkedHashSet<>()).add(productoFinal);
+    }
+
+    /**
+     * Consulta 4 - Orden de la cadena productiva registrada.
+     * Construye el grafo de dependencias y aplica clasificación topológica.
+     * Ayuda a planificar la secuencia de abastecimiento y producción. Si hay un
+     * ciclo, no existe un orden válido y se informa mediante una excepción.
+     */
+    public List<Producto> consultarOrdenCadenaProductiva() {
+        DirectedGraph<Producto, WeightedEdge> grafo = new DirectedGraph<>();
+        for (Producto producto : productos.values()) grafo.agregarVertice(producto);
+        for (Map.Entry<Producto, Set<Producto>> entrada : dependenciasProductivas.entrySet()) {
+            for (Producto destino : entrada.getValue()) {
+                if (!grafo.agregarArista(entrada.getKey(), destino, new WeightedEdge(1))) {
+                    throw new IllegalStateException("Dependencia productiva inválida o duplicada");
+                }
+            }
+        }
+        List<Producto> orden = algoritmosDirigidos.calcularClasificacionTopologica(grafo);
+        if (orden == null) throw new IllegalStateException("La cadena productiva contiene un ciclo");
+        return orden;
+    }
+
+    /**
+     * Consulta 5 - Red física mínima para un tipo de producto.
+     * Proyecta los tramos físicos activos a un grafo no dirigido y usa Kruskal
+     * para obtener un bosque de costo mínimo. Sirve para planificar qué enlaces
+     * de infraestructura sostener; no representa permisos comerciales ni rutas
+     * dirigidas. En una red desconectada devuelve un bosque, no un solo árbol.
+     */
+    public IUndirectedGraph<NodoLogistico, ArcoTramo> redFisicaMinima(Producto producto) {
+        Objects.requireNonNull(producto, "producto");
+        UndirectedGraph<NodoLogistico, ArcoTramo> fisico = new UndirectedGraph<>();
+        for (NodoLogistico nodo : nodos.values()) {
+            if (nodo.admite(producto)) fisico.agregarVertice(nodo);
+        }
+        for (Tramo tramo : tramos) {
+            if (!Boolean.TRUE.equals(tramo.getActivo())
+                    || tramo.getCostoUnitario() == null
+                    || tramo.getTiposCargaAdmitidos() == null
+                    || !tramo.getTiposCargaAdmitidos().contains(producto.getTipoCarga())
+                    || !fisico.vertices().contains(tramo.getOrigen())
+                    || !fisico.vertices().contains(tramo.getDestino())) continue;
+            Edge<NodoLogistico, ArcoTramo> previa = fisico.obtenerArista(tramo.getOrigen(), tramo.getDestino());
+            double costo = tramo.getCostoUnitario().doubleValue();
+            if (previa != null && previa.dato().getWeight() <= costo) continue;
+            if (previa != null) fisico.eliminarArista(fisico.construirComparable(tramo.getOrigen()),
+                    fisico.construirComparable(tramo.getDestino()));
+            fisico.agregarArista(tramo.getOrigen(), tramo.getDestino(), new ArcoTramo(costo, tramo));
+        }
+        return algoritmosNoDirigidos.kruskal(fisico);
     }
 
     /**
