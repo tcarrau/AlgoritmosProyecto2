@@ -80,8 +80,48 @@ public class ShortestPathAlgorithms {
         Map<V, List<Edge<V, D>>> salientes = indexarSalientes(grafo);
         Map<V, Integer> orden = indexarOrden(grafo.vertices());
 
+        return nucleoDijkstra(origen, grafo.vertices(), salientes, orden);
+    }
+
+    /**
+     * Corre Dijkstra desde cada vértice reutilizando un único índice de adyacencias.
+     *
+     * <p>Es la misma cuenta que llamar a {@link #dijkstra} una vez por vértice, pero sin
+     * repetir por cada llamada lo que no depende del origen: resolver el criterio O(V),
+     * validar los pesos O(E) y construir el índice O(V + E). Esas tres cosas pasan de
+     * pagarse V veces a pagarse una sola.</p>
+     *
+     * <p><b>Complejidad:</b> O(V + E) de preparación más O(V*(V + E)*log V) de las V
+     * corridas, contra O(V*(V + E)) solo de preparación en la versión que llama V veces a
+     * {@code dijkstra}. La diferencia no cambia el orden asintótico, pero en la práctica es
+     * la que decide si conviene frente a Floyd: ver las mediciones del Desafío 3.</p>
+     *
+     * @return para cada vértice, el resultado de Dijkstra tomándolo como origen
+     */
+    public <V, D extends WeightedEdge> Map<V, IDijkstraResult<V>> dijkstraDesdeTodos(IDirectedIGraph<V, D> grafo) {
+        Objects.requireNonNull(grafo, "grafo");
+        verificarPesosNoNegativos(grafo);
+
+        Map<V, List<Edge<V, D>>> salientes = indexarSalientes(grafo);
+        Map<V, Integer> orden = indexarOrden(grafo.vertices());
+
+        Map<V, IDijkstraResult<V>> resultados = new LinkedHashMap<>();
+        for (V origen : grafo.vertices()) {
+            resultados.put(origen, nucleoDijkstra(origen, grafo.vertices(), salientes, orden));
+        }
+        return resultados;
+    }
+
+    /**
+     * El algoritmo propiamente dicho, una vez que ya están resueltos el origen y el índice.
+     * Lo comparten {@link #dijkstra} y {@link #dijkstraDesdeTodos} para que no haya dos
+     * versiones del mismo recorrido que puedan divergir.
+     */
+    private static <V, D extends WeightedEdge> IDijkstraResult<V> nucleoDijkstra(
+            V origen, Collection<V> vertices, Map<V, List<Edge<V, D>>> salientes, Map<V, Integer> orden) {
+
         Map<V, Double> costos = new LinkedHashMap<>();
-        for (V v : grafo.vertices()) costos.put(v, Double.POSITIVE_INFINITY);
+        for (V v : vertices) costos.put(v, Double.POSITIVE_INFINITY);
         costos.put(origen, 0.0);
 
         Map<V, V> previos = new LinkedHashMap<>();
