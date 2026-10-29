@@ -1,0 +1,106 @@
+# Dataset de ejemplo. Campos separados por | ; listas separadas por ;
+# PAIS|nombre
+# PRODUCTO|nombre|categoria|tipoCarga|valorUnitario
+# PRODUCE|pais|producto
+# DEPENDENCIA|insumo|productoFinal (opcional; insumo antes que productoFinal)
+# NODO|nombre|tipo|pais|cargas
+# TRAMO|origen|destino|medio|costo|tiempo|cargas|bidireccional(S/N)
+# ACUERDO|paisA|paisB|tipo|arancel            (ambos sentidos)
+# ARANCEL|origen|destino|tipo|arancel         (un sentido)
+# ARANCELPROD|origen|destino|producto|arancel (prioridad sobre categoría y general)
+# ARANCELCAT|origen|destino|categoria|arancel (prioridad sobre el general)
+# EMBARGO|origen|destino
+# RESTRICCION|origen|destino|producto
+
+PAIS|UY
+PAIS|AR
+PAIS|BR
+PAIS|CL
+PAIS|CN
+PAIS|DE
+PAIS|US
+
+PRODUCTO|soja|granos|granel|500
+PRODUCTO|harina|alimentos|granel|700
+PRODUCTO|carne|alimentos|frio|5000
+PRODUCTO|vino|bebidas|contenedor|3000
+PRODUCTO|maquinaria|industrial|contenedor|20000
+
+PRODUCE|UY|carne
+PRODUCE|UY|soja
+PRODUCE|AR|soja
+PRODUCE|AR|harina
+PRODUCE|AR|vino
+PRODUCE|BR|soja
+PRODUCE|BR|carne
+PRODUCE|CL|vino
+PRODUCE|CN|maquinaria
+PRODUCE|DE|maquinaria
+PRODUCE|US|soja
+
+NODO|MVD|puerto|UY|granel;frio;contenedor
+NODO|RIVERA|ciudad|UY|granel;frio;contenedor
+NODO|BSAS|puerto|AR|granel;frio;contenedor
+NODO|ROSARIO|puerto|AR|granel;contenedor
+NODO|MENDOZA|ciudad|AR|frio;contenedor
+NODO|SANTOS|puerto|BR|granel;frio;contenedor
+NODO|SAOPAULO|ciudad|BR|granel;frio;contenedor
+NODO|PORTOALEGRE|ciudad|BR|granel;frio;contenedor
+NODO|VALPARAISO|puerto|CL|granel;frio;contenedor
+NODO|SANTIAGO|ciudad|CL|frio;contenedor
+NODO|SHANGHAI|puerto|CN|granel;frio;contenedor
+NODO|HAMBURGO|puerto|DE|granel;frio;contenedor
+NODO|BERLIN|ciudad|DE|contenedor
+NODO|HOUSTON|puerto|US|granel;frio;contenedor
+
+TRAMO|MVD|RIVERA|camion|20|5|granel;frio;contenedor|S
+TRAMO|MVD|BSAS|barco|30|8|granel;frio;contenedor|S
+TRAMO|MVD|SANTOS|barco|45|30|granel;frio;contenedor|S
+TRAMO|RIVERA|PORTOALEGRE|camion|25|6|granel;frio;contenedor|S
+TRAMO|PORTOALEGRE|SAOPAULO|camion|40|14|granel;frio;contenedor|S
+TRAMO|SAOPAULO|SANTOS|tren|15|4|granel;contenedor|S
+TRAMO|SAOPAULO|SANTOS|camion|30|3|granel;frio;contenedor|S
+TRAMO|ROSARIO|BSAS|tren|10|6|granel;contenedor|S
+TRAMO|BSAS|MENDOZA|camion|50|16|frio;contenedor|S
+TRAMO|MENDOZA|SANTIAGO|camion|60|12|frio;contenedor|S
+TRAMO|SANTIAGO|VALPARAISO|camion|15|2|frio;contenedor|S
+TRAMO|VALPARAISO|SHANGHAI|barco|120|600|granel;frio;contenedor|S
+TRAMO|SANTOS|SHANGHAI|barco|100|840|granel;frio;contenedor|S
+TRAMO|BSAS|HAMBURGO|barco|110|480|granel;frio;contenedor|S
+TRAMO|MVD|HAMBURGO|barco|115|500|granel;frio;contenedor|S
+TRAMO|SANTOS|HAMBURGO|barco|105|440|granel;frio;contenedor|S
+TRAMO|SANTOS|HAMBURGO|avion|350|14|frio;contenedor|S
+TRAMO|HAMBURGO|BERLIN|tren|20|8|contenedor|S
+TRAMO|SHANGHAI|HOUSTON|barco|130|600|granel;frio;contenedor|S
+TRAMO|SANTOS|HOUSTON|barco|90|360|granel;frio;contenedor|S
+TRAMO|MVD|SHANGHAI|avion|400|30|frio;contenedor|S
+
+ACUERDO|UY|AR|MERCOSUR|0
+ACUERDO|UY|BR|MERCOSUR|0
+ACUERDO|AR|BR|MERCOSUR|0
+ACUERDO|AR|CL|ALADI|0.05
+ACUERDO|UY|CL|ALADI|0.05
+ACUERDO|BR|CL|ALADI|0.05
+ACUERDO|UY|DE|MERCOSUR-UE|0.04
+ACUERDO|AR|DE|MERCOSUR-UE|0.04
+ACUERDO|BR|DE|MERCOSUR-UE|0.04
+ACUERDO|CL|CN|TLC|0
+ACUERDO|UY|CN|TLC|0.08
+ACUERDO|BR|CN|SIN_ACUERDO|0.1
+ACUERDO|AR|CN|SIN_ACUERDO|0.15
+ACUERDO|DE|CN|SIN_ACUERDO|0.1
+ACUERDO|UY|US|SIN_ACUERDO|0.1
+ACUERDO|AR|US|SIN_ACUERDO|0.1
+ACUERDO|BR|US|SIN_ACUERDO|0.12
+ARANCEL|CN|US|SIN_ACUERDO|0.25
+ARANCEL|US|CN|SIN_ACUERDO|0.25
+
+ARANCELPROD|AR|CN|soja|0.3
+ARANCELPROD|AR|CN|harina|0.25
+ARANCELPROD|AR|CN|carne|0.2
+ARANCELPROD|AR|CN|vino|0.15
+ARANCELPROD|AR|CN|maquinaria|0.1
+ARANCELCAT|AR|DE|alimentos|0.03
+
+EMBARGO|US|CN
+RESTRICCION|BR|DE|carne
