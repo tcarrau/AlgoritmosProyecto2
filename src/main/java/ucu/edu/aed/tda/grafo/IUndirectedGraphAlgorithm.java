@@ -5,7 +5,6 @@ import ucu.edu.aed.tda.grafo.model.edge.Edge;
 import ucu.edu.aed.tda.grafo.model.edge.WeightedEdge;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.function.Consumer;
 
 public interface IUndirectedGraphAlgorithm {
@@ -42,7 +41,4 @@ public interface IUndirectedGraphAlgorithm {
      * Implementa el algoritmo de búsqueda en amplitud
      */
     <V, D> void bea(IUndirectedGraph<V, D> graph, Consumer<V> consumer);
-
-    /** Retorna los vértices cuya eliminación aumenta la cantidad de componentes conexas. */
-    <V, D> Set<V> puntosDeArticulacion(IUndirectedGraph<V, D> graph);
 }
