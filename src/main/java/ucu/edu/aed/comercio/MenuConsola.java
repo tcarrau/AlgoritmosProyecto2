@@ -46,6 +46,12 @@ public final class MenuConsola {
         }
     }
 
+    /** Abre el menú con una red existente, incluidos los cambios de la sesión. */
+    public static void ejecutar(SistemaComercio sistema) {
+        new MenuConsola(sistema, new Scanner(System.in, StandardCharsets.UTF_8), System.out, null)
+                .ejecutar();
+    }
+
     private static SistemaComercio cargar(Path archivo) throws IOException {
         if (archivo == null) return CargadorDataset.cargarPredeterminado();
         try (Reader lector = Files.newBufferedReader(archivo, StandardCharsets.UTF_8)) {
